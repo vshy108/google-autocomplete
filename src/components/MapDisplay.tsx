@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {
   GoogleMap,
   useJsApiLoader,
@@ -6,17 +6,18 @@ import {
 } from '@react-google-maps/api';
 
 const containerStyle = {
-  width: '100vw',
-  height: '100vh',
+  width: 'calc(100vw - 100px)',
+  height: 'calc(100vh - 100px)',
 };
 
 const defaultCenter = {
-  lat: 3.140853,
-  lng: 101.693207,
+  lat: 3.1474168,
+  lng: 101.6969531,
 };
 
+const defaultZoom = 13;
+
 const MapDisplay = React.memo(() => {
-  const [center, setCenter] = useState(defaultCenter);
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -24,18 +25,15 @@ const MapDisplay = React.memo(() => {
     libraries: ['places'],
   });
 
-  const [, setMap] = React.useState<google.maps.Map | null>(null);
+  const [map, setMap] = React.useState<google.maps.Map | null>(null);
 
-  const onLoad = React.useCallback((newMap: google.maps.Map) => {
-    const bounds = new window.google.maps.LatLngBounds(center);
-    newMap.fitBounds(bounds);
-
+  const onLoad = (newMap: google.maps.Map) => {
     setMap(newMap);
-  }, []);
+  };
 
-  const onUnmount = React.useCallback(() => {
+  const onUnmount = () => {
     setMap(null);
-  }, []);
+  };
 
   const onLoadAutoComplete = (
     autocomplete: google.maps.places.Autocomplete
@@ -55,7 +53,8 @@ const MapDisplay = React.memo(() => {
         // Use latitude and longitude as needed
         console.log('Latitude:', latitude);
         console.log('Longitude:', longitude);
-        setCenter({ lat: latitude, lng: longitude });
+        map?.setCenter({ lat: latitude, lng: longitude });
+        map?.setZoom(defaultZoom);
       }
     } else {
       console.log('Autocomplete is not loaded yet!');
@@ -65,8 +64,8 @@ const MapDisplay = React.memo(() => {
   return isLoaded ? (
     <GoogleMap
       mapContainerStyle={containerStyle}
-      center={center}
-      zoom={10}
+      center={defaultCenter}
+      zoom={defaultZoom}
       onLoad={onLoad}
       onUnmount={onUnmount}
     >
@@ -75,7 +74,7 @@ const MapDisplay = React.memo(() => {
           type="text"
           placeholder="Search your place"
           style={{
-            backgroundColor: 'transparent',
+            backgroundColor: 'gray',
             boxSizing: `border-box`,
             border: `1px solid transparent`,
             width: `360px`,
@@ -89,6 +88,7 @@ const MapDisplay = React.memo(() => {
             position: 'absolute',
             left: '200px',
             top: '10px',
+            color: 'cyan',
           }}
         />
       </Autocomplete>
