@@ -1,9 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   GoogleMap,
   useJsApiLoader,
   Autocomplete,
+  Libraries,
 } from '@react-google-maps/api';
+import { type Dispatch } from 'redux';
+import { useDispatch } from 'react-redux';
+import { listLocation } from '@/redux/actions/location';
 
 const containerStyle = {
   width: 'calc(100vw - 100px)',
@@ -17,15 +21,24 @@ const defaultCenter = {
 
 const defaultZoom = 13;
 
+const libraries: Libraries | undefined = ['places'];
+
 const MapDisplay = React.memo(() => {
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ['places'],
+    libraries,
   });
 
-  const [map, setMap] = React.useState<google.maps.Map | null>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+
+  const dispatch: Dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(listLocation());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onLoad = (newMap: google.maps.Map) => {
     setMap(newMap);
