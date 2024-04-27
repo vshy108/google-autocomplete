@@ -9,9 +9,11 @@ import { type Dispatch } from 'redux';
 import { useDispatch } from 'react-redux';
 import { listLocation } from '@/redux/actions/location';
 
+import './index.less';
+
 const containerStyle = {
-  width: 'calc(100vw - 100px)',
-  height: 'calc(100vh - 100px)',
+  width: '100vw',
+  height: 'calc(100vh - 56px)',
 };
 
 const defaultCenter = {
@@ -86,23 +88,7 @@ const MapDisplay = React.memo(() => {
         <input
           type="text"
           placeholder="Search your place"
-          style={{
-            backgroundColor: 'gray',
-            boxSizing: `border-box`,
-            border: `1px solid transparent`,
-            width: `360px`,
-            height: `40px`,
-            padding: `0 12px`,
-            borderRadius: `3px`,
-            boxShadow: `0 2px 6px rgba(0, 0, 0, 0.3)`,
-            fontSize: `14px`,
-            outline: `none`,
-            textOverflow: `ellipses`,
-            position: 'absolute',
-            left: '200px',
-            top: '10px',
-            color: 'cyan',
-          }}
+          className="autocomplete-input"
         />
       </Autocomplete>
     </GoogleMap>

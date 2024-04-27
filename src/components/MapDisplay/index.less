@@ -1,0 +1,25 @@
+.autocomplete-input {
+  background-color: gray;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  width: calc(100vw - 310px);
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  outline: none;
+  text-overflow: ellipsis;
+  position: absolute;
+  left: 220px;
+  top: 9px;
+  color: cyan;
+}
+
+@media(max-width: 600px) {
+  .autocomplete-input {
+    top: 59px;
+    left: 10px;
+    width: calc(100vw - 20px);
+  }
+}
