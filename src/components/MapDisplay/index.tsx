@@ -4,6 +4,7 @@ import {
   useJsApiLoader,
   Autocomplete,
   Libraries,
+  Marker,
 } from '@react-google-maps/api';
 
 import './index.less';
@@ -31,6 +32,7 @@ const MapDisplay = memo(() => {
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [marker, setMarker] = useState<google.maps.LatLngLiteral | null>(null);
 
   const onLoad = (newMap: google.maps.Map) => {
     setMap(newMap);
@@ -49,20 +51,34 @@ const MapDisplay = memo(() => {
   const onPlaceChanged = () => {
     if (autoCompleteRef.current !== null) {
       const place = autoCompleteRef.current?.getPlace();
-      // Check if place has geometry and location
       if (place?.geometry?.location) {
-        // Extract latitude and longitude
-        const latitude = place.geometry.location.lat();
-        const longitude = place.geometry.location.lng();
-
-        // Use latitude and longitude as needed
-        console.log('Latitude:', latitude);
-        console.log('Longitude:', longitude);
-        map?.setCenter({ lat: latitude, lng: longitude });
-        map?.setZoom(defaultZoom);
+        if (
+          place.formatted_address &&
+          place.geometry.location &&
+          place.geometry.viewport
+        ) {
+          // -90 to 90 for latitude and -180 to 180 for longitude
+          const latitude = place.geometry.location.lat();
+          const longitude = place.geometry.location.lng();
+          const southWest = {
+            lat: place.geometry.viewport.getSouthWest().lat(),
+            lng: place.geometry.viewport.getSouthWest().lng(),
+          };
+          const northEast = {
+            lat: place.geometry.viewport.getNorthEast().lat(),
+            lng: place.geometry.viewport.getNorthEast().lng(),
+          };
+          const center = { lat: latitude, lng: longitude };
+          const latlngBounds = new google.maps.LatLngBounds(
+            southWest,
+            northEast
+          );
+          map?.fitBounds(latlngBounds);
+          setMarker(center);
+        }
       }
     } else {
-      console.log('Autocomplete is not loaded yet!');
+      console.error('Autocomplete is not loaded yet!');
     }
   };
 
@@ -81,6 +97,7 @@ const MapDisplay = memo(() => {
           className="autocomplete-input"
         />
       </Autocomplete>
+      {!!marker && <Marker position={marker} />}
     </GoogleMap>
   ) : (
     <></>
