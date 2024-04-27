@@ -18,7 +18,7 @@ import Tabs from '@mui/material/Tabs/Tabs';
 
 import './index.less';
 
-function ResponsiveAppBar() {
+const ResponsiveAppBar = () => {
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
 
   const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => {
@@ -29,7 +29,7 @@ function ResponsiveAppBar() {
     setAnchorElNav(null);
   };
 
-  function useRouteMatch(patterns: readonly string[]) {
+  const useRouteMatch = (patterns: readonly string[]) => {
     const { pathname } = useLocation();
 
     for (let i = 0; i < patterns.length; i += 1) {
@@ -41,7 +41,7 @@ function ResponsiveAppBar() {
     }
 
     return null;
-  }
+  };
 
   const routeMatch = useRouteMatch(['/', '/records']);
 
@@ -49,7 +49,7 @@ function ResponsiveAppBar() {
 
   return (
     <AppBar position="static">
-      <Container maxWidth="xl">
+      <Container maxWidth={false}>
         <Toolbar disableGutters>
           <Link to="/">
             <Home sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
@@ -175,5 +175,5 @@ function ResponsiveAppBar() {
       </Container>
     </AppBar>
   );
-}
+};
 export default ResponsiveAppBar;

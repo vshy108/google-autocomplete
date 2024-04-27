@@ -9,7 +9,7 @@ import ResponsiveAppBar from '@/components/ResponsiveAppBar';
 
 import { store, persistor } from '@/redux/configureStore';
 
-function App() {
+const App = () => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -24,6 +24,6 @@ function App() {
       </PersistGate>
     </Provider>
   );
-}
+};
 
 export default App;

@@ -1,12 +1,7 @@
 import { takeLatest, all, fork, call, put } from 'redux-saga/effects';
 import Actions from '@/redux/actions';
 import api from '@/services';
-import { type Location } from '@/redux/reducers/location';
-
-type Response = {
-  status: number;
-  data: { data: Location[] };
-};
+import { type Response } from '@/types';
 
 // TODO: list, create, update, delete
 

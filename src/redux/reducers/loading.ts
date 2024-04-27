@@ -1,6 +1,4 @@
 // https://medium.com/stashaway-engineering/react-redux-tips-better-way-to-handle-loading-flags-in-your-reducers-afda42a804c6
-import { combineReducers } from 'redux';
-
 const loadingReducer = (state = {}, action: { type: string }) => {
   const { type } = action;
   const matches = /(.*)_(REQUEST|SUCCESS|FAIL)/.exec(type);
@@ -18,6 +16,4 @@ const loadingReducer = (state = {}, action: { type: string }) => {
   };
 };
 
-export default combineReducers({
-  loading: loadingReducer,
-});
+export default loadingReducer;

@@ -1,4 +1,5 @@
-import { useEffect, forwardRef, Fragment } from 'react';
+// import { useEffect, forwardRef, Fragment } from 'react';
+import { forwardRef, Fragment } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -6,87 +7,69 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Pagination from '@mui/material/Pagination';
 import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import { type Dispatch } from 'redux';
-import { useDispatch } from 'react-redux';
-import { listLocation } from '@/redux/actions/location';
+import { useDispatch, useSelector } from 'react-redux';
+import IconButton from '@mui/material/IconButton';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
-interface Data {
-  calories: number;
-  carbs: number;
-  dessert: string;
-  fat: number;
-  id: number;
-  protein: number;
-}
+// import { listLocation } from '@/redux/actions/location';
+import { type RootState } from '@/redux/configureStore';
+import { type RemoteLocation } from '@/types';
+import TablePagination from '@mui/material/TablePagination/TablePagination';
+import { updateLocationFavourite } from '@/redux/actions/location';
 
 interface ColumnData {
-  dataKey: keyof Data;
+  dataKey: keyof RemoteLocation;
   label: string;
   numeric?: boolean;
   width: number;
 }
 
-type Sample = [string, number, number, number, number];
-
-const sample: readonly Sample[] = [
-  ['Frozen yoghurt', 159, 6.0, 24, 4.0],
-  ['Ice cream sandwich', 237, 9.0, 37, 4.3],
-  ['Eclair', 262, 16.0, 24, 6.0],
-  ['Cupcake', 305, 3.7, 67, 4.3],
-  ['Gingerbread', 356, 16.0, 49, 3.9],
-];
-
-function createData(
-  id: number,
-  dessert: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number
-): Data {
-  return { id, dessert, calories, fat, carbs, protein };
-}
+const createData = (
+  { id, name, isFavourite, southWest, northEast, center }: RemoteLocation,
+  index: number
+) => {
+  return {
+    id: id ?? -1 * (index + 1),
+    name,
+    isFavourite,
+    southWest,
+    northEast,
+    center,
+  };
+};
 
 const columns: ColumnData[] = [
   {
     width: 200,
-    label: 'Dessert',
-    dataKey: 'dessert',
+    label: 'Name',
+    dataKey: 'name',
+  },
+  {
+    width: 200,
+    label: 'South West',
+    dataKey: 'southWest',
+  },
+  {
+    width: 200,
+    label: 'North East',
+    dataKey: 'northEast',
+  },
+  {
+    width: 200,
+    label: 'Center',
+    dataKey: 'center',
   },
   {
     width: 120,
-    label: 'Calories\u00A0(g)',
-    dataKey: 'calories',
-    numeric: true,
-  },
-  {
-    width: 120,
-    label: 'Fat\u00A0(g)',
-    dataKey: 'fat',
-    numeric: true,
-  },
-  {
-    width: 120,
-    label: 'Carbs\u00A0(g)',
-    dataKey: 'carbs',
-    numeric: true,
-  },
-  {
-    width: 120,
-    label: 'Protein\u00A0(g)',
-    dataKey: 'protein',
-    numeric: true,
+    label: 'Action',
+    dataKey: 'isFavourite',
   },
 ];
 
-const rows: Data[] = Array.from({ length: 200 }, (_, index) => {
-  const randomSelection = sample[Math.floor(Math.random() * sample.length)];
-  return createData(index, ...randomSelection);
-});
-
-const VirtuosoTableComponents: TableComponents<Data> = {
+const VirtuosoTableComponents: TableComponents<RemoteLocation> = {
   Scroller: forwardRef<HTMLDivElement>((props, ref) => (
     <TableContainer component={Paper} {...props} ref={ref} />
   )),
@@ -105,7 +88,7 @@ const VirtuosoTableComponents: TableComponents<Data> = {
   )),
 };
 
-function fixedHeaderContent() {
+const fixedHeaderContent = () => {
   return (
     <TableRow>
       {columns.map(column => (
@@ -123,43 +106,95 @@ function fixedHeaderContent() {
       ))}
     </TableRow>
   );
-}
+};
 
-function rowContent(_index: number, row: Data) {
+const rowContent = (
+  _index: number,
+  row: RemoteLocation,
+  dispatch: Dispatch
+) => {
   return (
     <Fragment>
-      {columns.map(column => (
-        <TableCell
-          key={column.dataKey}
-          align={column.numeric || false ? 'right' : 'left'}
-        >
-          {row[column.dataKey]}
-        </TableCell>
-      ))}
+      {columns.map(column => {
+        let displayValue;
+        const originalValue = row[column.dataKey];
+        if (column.dataKey.startsWith('is')) {
+          displayValue = (
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={() => {
+                dispatch(
+                  updateLocationFavourite({
+                    name: row.name,
+                    isFavourite: !row.isFavourite,
+                  })
+                );
+              }}
+              color="inherit"
+            >
+              {originalValue ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            </IconButton>
+          );
+        } else if (typeof originalValue === 'string') {
+          displayValue = originalValue;
+        } else if (typeof originalValue === 'object') {
+          const keys = Object.keys(originalValue);
+          if (keys.includes('lat') && keys.includes('lng')) {
+            displayValue = `${originalValue.lat}, ${originalValue.lng}`;
+          }
+        }
+        return (
+          <TableCell
+            key={column.dataKey}
+            align={column.numeric || false ? 'right' : 'left'}
+          >
+            {displayValue}
+          </TableCell>
+        );
+      })}
     </Fragment>
   );
-}
+};
 
 const Records = () => {
   const dispatch: Dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(listLocation());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const locations = useSelector((state: RootState) => state.location.locations);
+
+  // useEffect(() => {
+  //   dispatch(listLocation());
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
+  const rows: RemoteLocation[] = locations.map((location, index) => {
+    return createData(location, index);
+  });
+
+  // TODO: HARDCODED
+  const COUNT = 100;
+  const PAGE = 1;
+  const ROWS_PER_PAGE = 10;
+
   return (
     <Paper style={{ height: '80vh', width: '100%' }}>
       <TableVirtuoso
         data={rows}
         components={VirtuosoTableComponents}
         fixedHeaderContent={fixedHeaderContent}
-        itemContent={rowContent}
+        itemContent={(_index: number, row: RemoteLocation) =>
+          rowContent(_index, row, dispatch)
+        }
       />
-      <Pagination
-        count={10}
-        color="primary"
-        showFirstButton
-        showLastButton
+      <TablePagination
+        component="div"
+        count={COUNT}
+        page={PAGE}
+        onPageChange={() => {}}
+        rowsPerPage={ROWS_PER_PAGE}
+        onRowsPerPageChange={() => {}}
         sx={{ float: 'right', padding: '12px' }}
       />
     </Paper>

@@ -6,8 +6,11 @@ import {
   Libraries,
   Marker,
 } from '@react-google-maps/api';
+import { type Dispatch } from 'redux';
+import { useDispatch } from 'react-redux';
 
 import './index.less';
+import { addRawLocation } from '@/redux/actions/location';
 
 const containerStyle = {
   width: '100vw',
@@ -24,6 +27,7 @@ const defaultZoom = 13;
 const libraries: Libraries | undefined = ['places'];
 
 const MapDisplay = memo(() => {
+  const dispatch: Dispatch = useDispatch();
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>();
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -74,6 +78,14 @@ const MapDisplay = memo(() => {
             northEast
           );
           map?.fitBounds(latlngBounds);
+          dispatch(
+            addRawLocation({
+              name: place.formatted_address,
+              southWest,
+              northEast,
+              center,
+            })
+          );
           setMarker(center);
         }
       }
