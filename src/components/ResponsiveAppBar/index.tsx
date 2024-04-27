@@ -1,4 +1,6 @@
-import * as React from 'react';
+import { useState, type MouseEvent } from 'react';
+import { Link, matchPath, useLocation } from 'react-router-dom';
+
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -8,19 +10,18 @@ import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Home from '@mui/icons-material/Home';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 
-const pages = ['Records'];
+import './index.less';
 
 function ResponsiveAppBar() {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-    null
-  );
+  const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
   };
 
@@ -28,16 +29,36 @@ function ResponsiveAppBar() {
     setAnchorElNav(null);
   };
 
+  function useRouteMatch(patterns: readonly string[]) {
+    const { pathname } = useLocation();
+
+    for (let i = 0; i < patterns.length; i += 1) {
+      const pattern = patterns[i];
+      const possibleMatch = matchPath(pattern, pathname);
+      if (possibleMatch !== null) {
+        return possibleMatch;
+      }
+    }
+
+    return null;
+  }
+
+  const routeMatch = useRouteMatch(['/', '/records']);
+
+  const currentTab = routeMatch?.pattern?.path;
+
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Home sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+          <Link to="/">
+            <Home sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+          </Link>
           <Typography
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="/"
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -80,19 +101,36 @@ function ResponsiveAppBar() {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {pages.map(page => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">{page}</Typography>
-                </MenuItem>
-              ))}
+              <MenuItem onClick={handleCloseNavMenu}>
+                <Typography
+                  textAlign="center"
+                  component={Link}
+                  to="/"
+                  className="btn-link"
+                >
+                  Home
+                </Typography>
+              </MenuItem>
+              <MenuItem onClick={handleCloseNavMenu}>
+                <Typography
+                  textAlign="center"
+                  component={Link}
+                  to="/records"
+                  className="btn-link"
+                >
+                  Records
+                </Typography>
+              </MenuItem>
             </Menu>
           </Box>
-          <Home sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+          <Link to="/">
+            <Home sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+          </Link>
           <Typography
             variant="h5"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            href="/"
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -104,18 +142,25 @@ function ResponsiveAppBar() {
               textDecoration: 'none',
             }}
           >
-            LOGO
+            HPH
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map(page => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                {page}
-              </Button>
-            ))}
+            <Tabs value={currentTab}>
+              <Tab
+                label="Home"
+                value="/"
+                to="/"
+                component={Link}
+                sx={{ '&.Mui-selected': { color: 'cyan' } }}
+              />
+              <Tab
+                label="Records"
+                value="/records"
+                to="/records"
+                component={Link}
+                sx={{ '&.Mui-selected': { color: 'cyan' } }}
+              />
+            </Tabs>
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
