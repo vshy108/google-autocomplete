@@ -1,3 +1,10 @@
+import {
+  type AlertColor,
+  type AlertPropsColorOverrides,
+} from '@mui/material/Alert/Alert';
+import { type SxProps, type Theme } from '@mui/material/styles';
+import { type OverridableStringUnion } from '@mui/types';
+
 export type LocalLocation = {
   name: string;
   southWest: google.maps.LatLngLiteral;
@@ -29,4 +36,11 @@ export type ResponseCreateRemote = {
 
 export type FavouriteLocalLocationPayload = {
   name: string;
+};
+
+export type NotificationPayload = {
+  message: string;
+  severity?: OverridableStringUnion<AlertColor, AlertPropsColorOverrides>;
+  duration?: number;
+  sx?: SxProps<Theme>;
 };

@@ -7,10 +7,12 @@ import {
   Marker,
 } from '@react-google-maps/api';
 import { type Dispatch } from 'redux';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import './index.less';
 import { addLocalLocation } from '@/redux/actions/location';
+import { type RootState } from '@/redux/configureStore';
+import { triggerNotification } from '@/redux/actions/notification';
 
 const containerStyle = {
   width: '100vw',
@@ -37,6 +39,14 @@ const MapDisplay = memo(() => {
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [marker, setMarker] = useState<google.maps.LatLngLiteral | null>(null);
+
+  const localLocations = useSelector(
+    (state: RootState) => state.location.localLocations
+  );
+
+  const remoteLocations = useSelector(
+    (state: RootState) => state.location.remoteLocations
+  );
 
   const onLoad = (newMap: google.maps.Map) => {
     setMap(newMap);
@@ -78,15 +88,30 @@ const MapDisplay = memo(() => {
             northEast
           );
           map?.fitBounds(latlngBounds);
-          dispatch(
-            addLocalLocation({
-              name: place.formatted_address,
-              southWest,
-              northEast,
-              center,
-              isFavourite: false,
-            })
-          );
+          const name = place.formatted_address;
+          const isExistLocal = localLocations.find(loc => loc.name === name);
+          const isExistRemote = remoteLocations.find(loc => loc.name === name);
+          if (!isExistLocal && !isExistRemote) {
+            dispatch(
+              addLocalLocation({
+                name,
+                southWest,
+                northEast,
+                center,
+                isFavourite: false,
+              })
+            );
+          } else {
+            dispatch(
+              triggerNotification({
+                message: `Exist in ${
+                  isExistLocal ? 'local' : 'remote'
+                } records`,
+                severity: 'warning',
+              })
+            );
+          }
+
           setMarker(center);
         }
       }

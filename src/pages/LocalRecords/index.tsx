@@ -15,7 +15,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 // import { listLocation } from '@/redux/actions/location';
 import { type RootState } from '@/redux/configureStore';
-import { type LocalLocationTableRow } from '@/types';
+import { LocalLocation, type LocalLocationTableRow } from '@/types';
 import TablePagination from '@mui/material/TablePagination/TablePagination';
 import { createLocation } from '@/redux/actions/location';
 
@@ -27,18 +27,11 @@ interface ColumnData {
 }
 
 const createData = (
-  {
-    id,
-    name,
-    isFavourite,
-    southWest,
-    northEast,
-    center,
-  }: LocalLocationTableRow,
+  { name, isFavourite, southWest, northEast, center }: LocalLocation,
   index: number
 ) => {
   return {
-    id: id ?? -1 * (index + 1),
+    id: -1 * (index + 1),
     name,
     isFavourite,
     southWest,
@@ -165,7 +158,7 @@ const rowContent = (
 const LocalRecords = () => {
   const dispatch: Dispatch = useDispatch();
 
-  const localLocations = useSelector(
+  const localLocations: LocalLocation[] = useSelector(
     (state: RootState) => state.location.localLocations
   );
 

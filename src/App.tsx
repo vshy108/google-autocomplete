@@ -2,13 +2,14 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from 'react-redux';
 import CssBaseline from '@mui/material/CssBaseline';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { store, persistor } from '@/redux/configureStore';
 
 import MapDisplay from '@/pages/MapDisplay';
 import LocalRecords from '@/pages/LocalRecords';
 import RemoteRecords from '@/pages/RemoteRecords';
-import ResponsiveAppBar from '@/components/ResponsiveAppBar';
 
-import { store, persistor } from '@/redux/configureStore';
+import ResponsiveAppBar from '@/components/ResponsiveAppBar';
+import Snackbar from './components/SnackBar';
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
             <Route path="/remote_records" element={<RemoteRecords />} />
           </Routes>
         </BrowserRouter>
+        <Snackbar />
       </PersistGate>
     </Provider>
   );
