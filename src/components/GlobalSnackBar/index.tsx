@@ -1,4 +1,4 @@
-import MuiSnackBar from '@mui/material/Snackbar';
+import SnackBar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
 import { useEffect, useRef, useState } from 'react';
@@ -8,7 +8,7 @@ import { type RootState } from '@/redux/configureStore';
 import { type NotificationPayload } from '@/types';
 import { triggerNotification } from '@/redux/actions/notification';
 
-const Snackbar = () => {
+const GlobalSnackbar = () => {
   const dispatch: Dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const timerRef = useRef<NodeJS.Timeout>();
@@ -46,7 +46,7 @@ const Snackbar = () => {
   };
 
   return (
-    <MuiSnackBar
+    <SnackBar
       ContentProps={{ sx: { background: 'white', color: 'black' } }}
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       open={open}
@@ -63,8 +63,8 @@ const Snackbar = () => {
       >
         {message}
       </Alert>
-    </MuiSnackBar>
+    </SnackBar>
   );
 };
 
-export default Snackbar;
+export default GlobalSnackbar;

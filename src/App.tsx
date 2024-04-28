@@ -9,7 +9,7 @@ import LocalRecords from '@/pages/LocalRecords';
 import RemoteRecords from '@/pages/RemoteRecords';
 
 import ResponsiveAppBar from '@/components/ResponsiveAppBar';
-import Snackbar from './components/SnackBar';
+import GlobalSnackbar from './components/GlobalSnackBar';
 
 const App = () => {
   return (
@@ -24,7 +24,7 @@ const App = () => {
             <Route path="/remote_records" element={<RemoteRecords />} />
           </Routes>
         </BrowserRouter>
-        <Snackbar />
+        <GlobalSnackbar />
       </PersistGate>
     </Provider>
   );
