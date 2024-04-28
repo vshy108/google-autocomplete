@@ -1,5 +1,4 @@
-// import { useEffect, forwardRef, Fragment } from 'react';
-import { forwardRef, Fragment } from 'react';
+import { forwardRef, Fragment, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -162,6 +161,9 @@ const LocalRecords = () => {
     (state: RootState) => state.location.localLocations
   );
 
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   // useEffect(() => {
   //   dispatch(listLocation());
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -172,11 +174,6 @@ const LocalRecords = () => {
       return createData(location, index);
     }
   );
-
-  // TODO: HARDCODED
-  const COUNT = 100;
-  const PAGE = 1;
-  const ROWS_PER_PAGE = 10;
 
   return (
     <Paper style={{ height: '80vh', width: '100%' }}>
@@ -190,11 +187,15 @@ const LocalRecords = () => {
       />
       <TablePagination
         component="div"
-        count={COUNT}
-        page={PAGE}
-        onPageChange={() => {}}
-        rowsPerPage={ROWS_PER_PAGE}
-        onRowsPerPageChange={() => {}}
+        count={localLocations.length}
+        page={page}
+        onPageChange={(_, page) => {
+          setPage(page);
+        }}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={event => {
+          setRowsPerPage(parseInt(event.target.value, 10));
+        }}
         sx={{ float: 'right', padding: '12px' }}
       />
     </Paper>
