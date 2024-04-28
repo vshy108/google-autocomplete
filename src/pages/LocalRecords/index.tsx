@@ -169,11 +169,11 @@ const LocalRecords = () => {
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, []);
 
-  const rows: LocalLocationTableRow[] = localLocations.map(
-    (location, index) => {
+  const rows: LocalLocationTableRow[] = localLocations
+    .slice(rowsPerPage * page, rowsPerPage * (page + 1))
+    .map((location, index) => {
       return createData(location, index);
-    }
-  );
+    });
 
   return (
     <Paper style={{ height: '80vh', width: '100%' }}>
