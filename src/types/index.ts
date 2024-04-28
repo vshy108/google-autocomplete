@@ -1,9 +1,12 @@
-export type RawLocation = {
+export type LocalLocation = {
   name: string;
   southWest: google.maps.LatLngLiteral;
   northEast: google.maps.LatLngLiteral;
   center: google.maps.LatLngLiteral;
+  isFavourite: boolean;
 };
+
+export type LocalLocationTableRow = LocalLocation & { id: number };
 
 export type RemoteLocation = {
   id: number;
@@ -14,12 +17,16 @@ export type RemoteLocation = {
   isFavourite: boolean;
 };
 
-export type Response = {
+export type ResponseListRemote = {
   status: number;
   data: { data: RemoteLocation[] };
 };
 
-export type updateLocationFavouritePayload = {
+export type ResponseCreateRemote = {
+  status: number;
+  data: { data: RemoteLocation };
+};
+
+export type FavouriteLocalLocationPayload = {
   name: string;
-  isFavourite: boolean;
 };

@@ -43,7 +43,7 @@ const ResponsiveAppBar = () => {
     return null;
   };
 
-  const routeMatch = useRouteMatch(['/', '/records']);
+  const routeMatch = useRouteMatch(['/', '/local_records', '/remote_records']);
 
   const currentTab = routeMatch?.pattern?.path;
 
@@ -115,10 +115,20 @@ const ResponsiveAppBar = () => {
                 <Typography
                   textAlign="center"
                   component={Link}
-                  to="/records"
+                  to="/local_records"
                   className="btn-link"
                 >
-                  Records
+                  Local Records
+                </Typography>
+              </MenuItem>
+              <MenuItem onClick={handleCloseNavMenu}>
+                <Typography
+                  textAlign="center"
+                  component={Link}
+                  to="/remote_records"
+                  className="btn-link"
+                >
+                  Remote Records
                 </Typography>
               </MenuItem>
             </Menu>
@@ -154,9 +164,16 @@ const ResponsiveAppBar = () => {
                 sx={{ '&.Mui-selected': { color: 'cyan' } }}
               />
               <Tab
-                label="Records"
-                value="/records"
-                to="/records"
+                label="Local Records"
+                value="/local_records"
+                to="/local_records"
+                component={Link}
+                sx={{ '&.Mui-selected': { color: 'cyan' } }}
+              />
+              <Tab
+                label="Remote Records"
+                value="/remote_records"
+                to="/remote_records"
                 component={Link}
                 sx={{ '&.Mui-selected': { color: 'cyan' } }}
               />

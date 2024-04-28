@@ -10,7 +10,7 @@ import { type Dispatch } from 'redux';
 import { useDispatch } from 'react-redux';
 
 import './index.less';
-import { addRawLocation } from '@/redux/actions/location';
+import { addLocalLocation } from '@/redux/actions/location';
 
 const containerStyle = {
   width: '100vw',
@@ -79,11 +79,12 @@ const MapDisplay = memo(() => {
           );
           map?.fitBounds(latlngBounds);
           dispatch(
-            addRawLocation({
+            addLocalLocation({
               name: place.formatted_address,
               southWest,
               northEast,
               center,
+              isFavourite: false,
             })
           );
           setMarker(center);

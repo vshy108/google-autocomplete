@@ -3,8 +3,9 @@ import { Provider } from 'react-redux';
 import CssBaseline from '@mui/material/CssBaseline';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import MapDisplay from '@/components/MapDisplay';
-import Records from '@/components/Records';
+import MapDisplay from '@/pages/MapDisplay';
+import LocalRecords from '@/pages/LocalRecords';
+import RemoteRecords from '@/pages/RemoteRecords';
 import ResponsiveAppBar from '@/components/ResponsiveAppBar';
 
 import { store, persistor } from '@/redux/configureStore';
@@ -18,7 +19,8 @@ const App = () => {
           <ResponsiveAppBar />
           <Routes>
             <Route path="/" element={<MapDisplay />} />
-            <Route path="/records" element={<Records />} />
+            <Route path="/local_records" element={<LocalRecords />} />
+            <Route path="/remote_records" element={<RemoteRecords />} />
           </Routes>
         </BrowserRouter>
       </PersistGate>

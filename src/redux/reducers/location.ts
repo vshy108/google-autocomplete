@@ -1,40 +1,48 @@
 import Actions from '@/redux/actions';
 import { type AnyAction } from 'redux-saga';
-import { type RemoteLocation } from '@/types';
+import { type LocalLocation, RemoteLocation } from '@/types';
 
 const initialState = Object.freeze({
-  locations: [] as RemoteLocation[],
+  localLocations: [] as LocalLocation[],
+  remoteLocations: [] as RemoteLocation[],
 });
 
 const location = (state = initialState, action: AnyAction) => {
   switch (action.type) {
-    case Actions.LOCATION_ADD: {
+    case Actions.LOCATION_ADD_LOCAL: {
       if (
-        state.locations.findIndex(
+        state.localLocations.findIndex(
           location => location.name === action.payload.name
         ) === -1
       ) {
         return {
           ...state,
-          locations: [...state.locations, action.payload],
+          localLocations: [...state.localLocations, action.payload],
         };
       }
 
       return state;
     }
 
+    case Actions.LOCATION_CREATE: {
+      const newLocalLocations = state.localLocations.filter(
+        localLocation => localLocation.name !== action.payload.name
+      );
+      return { ...state, localLocations: newLocalLocations };
+    }
+
     case Actions.LOCATION_UPDATE_FAVOURTIE: {
-      const matchIndex = state.locations.findIndex(
+      const matchIndex = state.remoteLocations.findIndex(
         location => location.name === action.payload.name
       );
       if (matchIndex !== -1) {
-        const beforeIndex = state.locations.slice(0, matchIndex);
-        const target = state.locations[matchIndex];
+        const beforeIndex = state.remoteLocations.slice(0, matchIndex);
+        const target = state.remoteLocations[matchIndex];
         target.isFavourite = action.payload.isFavourite;
-        const afterIndex = state.locations.slice(matchIndex + 1);
+        const afterIndex = state.remoteLocations.slice(matchIndex + 1);
         return {
           ...state,
-          locations: [...beforeIndex, target, ...afterIndex],
+          remoteLocations: [...beforeIndex, target, ...afterIndex],
         };
       }
 

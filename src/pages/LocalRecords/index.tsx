@@ -11,24 +11,30 @@ import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 import { type Dispatch } from 'redux';
 import { useDispatch, useSelector } from 'react-redux';
 import IconButton from '@mui/material/IconButton';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 // import { listLocation } from '@/redux/actions/location';
 import { type RootState } from '@/redux/configureStore';
-import { type RemoteLocation } from '@/types';
+import { type LocalLocationTableRow } from '@/types';
 import TablePagination from '@mui/material/TablePagination/TablePagination';
-import { updateLocationFavourite } from '@/redux/actions/location';
+import { createLocation } from '@/redux/actions/location';
 
 interface ColumnData {
-  dataKey: keyof RemoteLocation;
+  dataKey: keyof LocalLocationTableRow;
   label: string;
   numeric?: boolean;
   width: number;
 }
 
 const createData = (
-  { id, name, isFavourite, southWest, northEast, center }: RemoteLocation,
+  {
+    id,
+    name,
+    isFavourite,
+    southWest,
+    northEast,
+    center,
+  }: LocalLocationTableRow,
   index: number
 ) => {
   return {
@@ -69,7 +75,7 @@ const columns: ColumnData[] = [
   },
 ];
 
-const VirtuosoTableComponents: TableComponents<RemoteLocation> = {
+const VirtuosoTableComponents: TableComponents<LocalLocationTableRow> = {
   Scroller: forwardRef<HTMLDivElement>((props, ref) => (
     <TableContainer component={Paper} {...props} ref={ref} />
   )),
@@ -110,7 +116,7 @@ const fixedHeaderContent = () => {
 
 const rowContent = (
   _index: number,
-  row: RemoteLocation,
+  row: LocalLocationTableRow,
   dispatch: Dispatch
 ) => {
   return (
@@ -126,16 +132,13 @@ const rowContent = (
               aria-controls="menu-appbar"
               aria-haspopup="true"
               onClick={() => {
-                dispatch(
-                  updateLocationFavourite({
-                    name: row.name,
-                    isFavourite: !row.isFavourite,
-                  })
-                );
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { id, ...rest } = row;
+                dispatch(createLocation(rest));
               }}
               color="inherit"
             >
-              {originalValue ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+              <FavoriteBorderIcon />
             </IconButton>
           );
         } else if (typeof originalValue === 'string') {
@@ -159,19 +162,23 @@ const rowContent = (
   );
 };
 
-const Records = () => {
+const LocalRecords = () => {
   const dispatch: Dispatch = useDispatch();
 
-  const locations = useSelector((state: RootState) => state.location.locations);
+  const localLocations = useSelector(
+    (state: RootState) => state.location.localLocations
+  );
 
   // useEffect(() => {
   //   dispatch(listLocation());
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, []);
 
-  const rows: RemoteLocation[] = locations.map((location, index) => {
-    return createData(location, index);
-  });
+  const rows: LocalLocationTableRow[] = localLocations.map(
+    (location, index) => {
+      return createData(location, index);
+    }
+  );
 
   // TODO: HARDCODED
   const COUNT = 100;
@@ -184,7 +191,7 @@ const Records = () => {
         data={rows}
         components={VirtuosoTableComponents}
         fixedHeaderContent={fixedHeaderContent}
-        itemContent={(_index: number, row: RemoteLocation) =>
+        itemContent={(_index: number, row: LocalLocationTableRow) =>
           rowContent(_index, row, dispatch)
         }
       />
@@ -201,4 +208,4 @@ const Records = () => {
   );
 };
 
-export default Records;
+export default LocalRecords;
