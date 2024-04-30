@@ -19,14 +19,22 @@ const logger = createLogger({
   collapsed: true,
 });
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 export const store = configureStore({
   reducer: persistedReducer,
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: isDev,
   middleware: gDM => {
     applyMiddleware(sagaMiddleware);
+    if (isDev) {
+      return gDM({
+        serializableCheck: false,
+      }).concat(sagaMiddleware, logger);
+    }
+
     return gDM({
       serializableCheck: false,
-    }).concat(sagaMiddleware, logger);
+    }).concat(sagaMiddleware);
   },
 });
 

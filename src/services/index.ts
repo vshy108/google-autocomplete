@@ -1,6 +1,10 @@
 import { AxiosResponse } from 'axios';
 import api from './helper';
-import { type LocalLocation, type RemoteLocation } from '@/types';
+import {
+  type UpdateFavouritePayload,
+  type LocalLocation,
+  type RemoteLocation,
+} from '@/types';
 
 export default {
   // List remote locations
@@ -11,4 +15,10 @@ export default {
   createLocation: (
     payload: LocalLocation
   ): Promise<AxiosResponse<RemoteLocation>> => api.post('location', payload),
+  updateLocationFavourite: (
+    payload: UpdateFavouritePayload
+  ): Promise<AxiosResponse<RemoteLocation>> =>
+    api.put(`locations/${payload?.id}`, { isFavourite: payload?.isFavourite }),
+  deleteRemoteLocation: (id: number): Promise<AxiosResponse<string>> =>
+    api.delete(`locations/${id}`),
 };

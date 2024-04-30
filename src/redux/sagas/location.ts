@@ -1,15 +1,18 @@
 import { takeLatest, all, fork, call, put } from 'redux-saga/effects';
 import Actions from '@/redux/actions';
 import api from '@/services';
-import { type ResponseCreateRemote, type ResponseListRemote } from '@/types';
 import {
-  addLocalLocation,
+  type SingleLocationResponse,
+  type ResponseListRemote,
+  type DeleteLocationResponse,
+} from '@/types';
+import {
   createLocation,
+  deleteLocation,
   listLocation,
+  updateLocationFavourite,
 } from '../actions/location';
 import get from 'lodash/get';
-
-// TODO: list, create, update, delete
 
 function* listRemote({
   page,
@@ -30,6 +33,16 @@ function* listRemote({
   } catch (error) {
     // TODO: can generate error by remove column name checking
     yield put(Actions.listLocationFail(error));
+    yield put(
+      Actions.triggerNotification({
+        message: get(
+          error,
+          'response.data.message',
+          'Failed on listing remote location. Please try again later'
+        ),
+        severity: 'error',
+      })
+    );
   }
 }
 
@@ -38,24 +51,93 @@ function* createRemote({
 }: ReturnType<typeof createLocation>): Generator<
   unknown,
   void,
-  ResponseCreateRemote
+  SingleLocationResponse
 > {
   try {
     const response = yield call(api.createLocation, payload);
     if (response?.status === 200) {
+      Actions.triggerNotification({
+        message: 'Successfully creating location.',
+        severity: 'success',
+      });
       yield put(Actions.createLocationSuccess(response?.data));
     }
   } catch (error) {
-    // TODO: case of unique
+    // NOTE: Uniqueness conflict on name column
     yield put(Actions.createLocationFail(error));
     yield put(
       Actions.triggerNotification({
-        message: get(error, 'response.data.message', 'Please try again later'),
+        message: get(
+          error,
+          'response.data.message',
+          'Failed on creating location. Please try again later'
+        ),
         severity: 'error',
       })
     );
-    // restore the failure local record
-    yield put(addLocalLocation(payload));
+  }
+}
+
+function* updateFavourite({
+  payload,
+}: ReturnType<typeof updateLocationFavourite>): Generator<
+  unknown,
+  void,
+  SingleLocationResponse
+> {
+  try {
+    const response = yield call(api.updateLocationFavourite, payload);
+    if (response?.status === 200) {
+      Actions.triggerNotification({
+        message: 'Successfully update favourite of the location.',
+        severity: 'success',
+      });
+      yield put(Actions.updateLocationFavouriteSuccess(response?.data));
+    }
+  } catch (error) {
+    yield put(
+      Actions.triggerNotification({
+        message: get(
+          error,
+          'response.data.message',
+          'Failed on update favourite of the location. Please try again later'
+        ),
+        severity: 'error',
+      })
+    );
+    yield put(Actions.updateLocationFavouriteFail(error));
+  }
+}
+
+function* deleteRemote({
+  payload: { id, onSuccess },
+}: ReturnType<typeof deleteLocation>): Generator<
+  unknown,
+  void,
+  DeleteLocationResponse
+> {
+  try {
+    const response = yield call(api.deleteRemoteLocation, id);
+    if (response?.status === 200) {
+      Actions.triggerNotification({
+        message: 'Successfully delete location.',
+        severity: 'success',
+      });
+      yield put(Actions.deleteLocationSuccess(id));
+      onSuccess?.();
+    }
+  } catch (error) {
+    yield put(
+      Actions.triggerNotification({
+        message: get(
+          error,
+          'response.data.message',
+          'Failed on delete location. Please try again later'
+        ),
+        severity: 'error',
+      })
+    );
+    yield put(Actions.deleteLocationFail(error));
   }
 }
 
@@ -67,6 +149,19 @@ function* watchCreateRemote() {
   yield takeLatest(Actions.LOCATION_CREATE, createRemote);
 }
 
+function* watchUpdateFavourite() {
+  yield takeLatest(Actions.LOCATION_UPDATE_FAVOURITE, updateFavourite);
+}
+
+function* watchDelete() {
+  yield takeLatest(Actions.LOCATION_DELETE, deleteRemote);
+}
+
 export default function* location() {
-  yield all([fork(watchListRemote), fork(watchCreateRemote)]);
+  yield all([
+    fork(watchListRemote),
+    fork(watchCreateRemote),
+    fork(watchUpdateFavourite),
+    fork(watchDelete),
+  ]);
 }

@@ -1,8 +1,10 @@
 import { forwardRef, Fragment, useEffect, useState } from 'react';
-import { connect, useDispatch } from 'react-redux';
+import { connect } from 'react-redux';
 import { type Dispatch } from 'redux';
 import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Paper from '@mui/material/Paper/Paper';
 import { type TableComponents, TableVirtuoso } from 'react-virtuoso';
 import TablePagination from '@mui/material/TablePagination/TablePagination';
@@ -16,7 +18,12 @@ import TableHead from '@mui/material/TableHead/TableHead';
 import { Button } from '@mui/material';
 import { type NavigateFunction, useNavigate } from 'react-router-dom';
 
-import { listLocation, LOCATION_LIST } from '@/redux/actions/location';
+import {
+  deleteLocation,
+  listLocation,
+  LOCATION_LIST,
+  updateLocationFavourite,
+} from '@/redux/actions/location';
 import { type RootState } from '@/redux/configureStore';
 import { createLoadingSelector } from '@/redux/selectors/loading';
 import { type RemoteLocation } from '@/types';
@@ -27,6 +34,7 @@ type Props = {
   isFetching: boolean;
   remoteLocations: RemoteLocation[];
   totalRows: number | null;
+  dispatch: Dispatch;
 };
 
 interface ColumnData {
@@ -68,7 +76,7 @@ const columns: ColumnData[] = [
   },
   {
     width: 120,
-    label: 'Action',
+    label: 'Actions',
     dataKey: 'isFavourite',
   },
 ];
@@ -152,59 +160,12 @@ const fixedHeaderContent = () => {
   );
 };
 
-const rowContent = (
-  _index: number,
-  row: RemoteLocation,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _dispatch: Dispatch
-) => {
-  return (
-    <Fragment>
-      {columns.map(column => {
-        let displayValue;
-        const originalValue = row[column.dataKey];
-        if (column.dataKey.startsWith('is')) {
-          displayValue = (
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={() => {
-                // TODO: update isFavourite
-              }}
-              color="inherit"
-            >
-              <FavoriteBorderIcon />
-            </IconButton>
-          );
-        } else if (typeof originalValue === 'string') {
-          displayValue = originalValue;
-        } else if (typeof originalValue === 'object') {
-          const keys = Object.keys(originalValue);
-          if (keys.includes('x') && keys.includes('y')) {
-            displayValue = `${originalValue.x}, ${originalValue.y}`;
-          }
-        }
-        return (
-          <TableCell
-            key={column.dataKey}
-            align={column.numeric || false ? 'right' : 'left'}
-          >
-            {displayValue}
-          </TableCell>
-        );
-      })}
-    </Fragment>
-  );
-};
-
 const RemoteRecords = ({
   isFetching,
   remoteLocations = [],
   totalRows = null,
+  dispatch,
 }: Props) => {
-  const dispatch: Dispatch = useDispatch();
   // TODO: load initial state from route query
   const [page, setPage] = useState(DEFAULT_PAGE);
   const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
@@ -222,6 +183,83 @@ const RemoteRecords = ({
       </div>
     );
   }
+
+  const rowContent = (
+    _index: number,
+    row: RemoteLocation,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    dispatch: Dispatch
+  ) => {
+    return (
+      <Fragment>
+        {columns.map(column => {
+          let displayValue;
+          const originalValue = row[column.dataKey];
+          if (column.dataKey.startsWith('is')) {
+            displayValue = (
+              <>
+                <IconButton
+                  size="large"
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={() => {
+                    // TODO: disable when the updateLocationFavourite request is loading
+                    dispatch(
+                      updateLocationFavourite({
+                        id: row.id,
+                        isFavourite: !originalValue,
+                      })
+                    );
+                  }}
+                  color="inherit"
+                >
+                  {originalValue ? (
+                    <FavoriteOutlinedIcon />
+                  ) : (
+                    <FavoriteBorderIcon />
+                  )}
+                </IconButton>
+                <IconButton
+                  size="large"
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={() => {
+                    dispatch(
+                      deleteLocation({
+                        id: row.id,
+                        onSuccess: () =>
+                          dispatch(listLocation(page, rowsPerPage)),
+                      })
+                    );
+                  }}
+                  color="inherit"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </>
+            );
+          } else if (typeof originalValue === 'string') {
+            displayValue = originalValue;
+          } else if (typeof originalValue === 'object') {
+            const keys = Object.keys(originalValue);
+            if (keys.includes('x') && keys.includes('y')) {
+              displayValue = `${originalValue.x}, ${originalValue.y}`;
+            }
+          }
+          return (
+            <TableCell
+              key={column.dataKey}
+              align={column.numeric || false ? 'right' : 'left'}
+            >
+              {displayValue}
+            </TableCell>
+          );
+        })}
+      </Fragment>
+    );
+  };
 
   const rows: RemoteLocation[] = remoteLocations.map(location => {
     return createData(location);

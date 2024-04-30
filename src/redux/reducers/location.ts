@@ -31,14 +31,14 @@ const location = (state = initialState, action: AnyAction) => {
       return state;
     }
 
-    case Actions.LOCATION_CREATE: {
+    case Actions.LOCATION_CREATE_SUCCESS: {
       const newLocalLocations = state.localLocations.filter(
         localLocation => localLocation.name !== action.payload.name
       );
       return { ...state, localLocations: newLocalLocations };
     }
 
-    case Actions.LOCATION_UPDATE_FAVOURTIE: {
+    case Actions.LOCATION_UPDATE_FAVOURITE: {
       const matchIndex = state.remoteLocations.findIndex(
         location => location.name === action.payload.name
       );
@@ -69,6 +69,32 @@ const location = (state = initialState, action: AnyAction) => {
         totalRows,
         rowsPerPage,
         page,
+      };
+    }
+
+    case Actions.LOCATION_UPDATE_FAVOURITE_SUCCESS: {
+      const matchIndex = state.remoteLocations.findIndex(
+        location => location.id === action?.payload?.id
+      );
+      if (matchIndex !== -1) {
+        const beforeIndex = state.remoteLocations.slice(0, matchIndex);
+        const target = action.payload;
+        const afterIndex = state.remoteLocations.slice(matchIndex + 1);
+        return {
+          ...state,
+          remoteLocations: [...beforeIndex, target, ...afterIndex],
+        };
+      }
+
+      return state;
+    }
+
+    case Actions.LOCATION_DELETE_SUCCESS: {
+      return {
+        ...state,
+        remoteLocations: state.remoteLocations.filter(
+          remoteLocation => remoteLocation.id !== action.id
+        ),
       };
     }
 

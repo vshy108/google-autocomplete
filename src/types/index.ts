@@ -34,7 +34,7 @@ export type ResponseListRemote = {
   data: PaginatedLocations;
 };
 
-export type ResponseCreateRemote = {
+export type SingleLocationResponse = {
   status: number;
   data: RemoteLocation;
 };
@@ -75,4 +75,19 @@ export type PaginatedLocations = {
   sort: PaginatedSort;
   totalElements: number;
   totalPages: number;
+};
+
+export type UpdateFavouritePayload = {
+  id: number;
+  isFavourite: boolean;
+};
+
+export type DeleteLocationResponse = {
+  status: number;
+  data: string;
+};
+
+export type DeleteLocationActionPayload = {
+  id: number;
+  onSuccess?: () => void;
 };
