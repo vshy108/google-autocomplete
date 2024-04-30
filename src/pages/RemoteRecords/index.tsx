@@ -25,11 +25,8 @@ import './index.less';
 
 type Props = {
   isFetching: boolean;
-  remoteLocationsRedux: RemoteLocation[];
-  totalPagesRedux: number | null;
-  totalRowsRedux: number | null;
-  rowsPerPageRedux: number;
-  pageRedux: number;
+  remoteLocations: RemoteLocation[];
+  totalRows: number | null;
 };
 
 interface ColumnData {
@@ -44,6 +41,9 @@ type TableContext = {
     navigate: NavigateFunction;
   };
 };
+
+const DEFAULT_PAGE = 0;
+const DEFAULT_ROWS_PER_PAGE = 10;
 
 const columns: ColumnData[] = [
   {
@@ -201,14 +201,13 @@ const rowContent = (
 
 const RemoteRecords = ({
   isFetching,
-  remoteLocationsRedux = [],
-  totalRowsRedux = null,
-  rowsPerPageRedux = 10,
-  pageRedux = 0,
+  remoteLocations = [],
+  totalRows = null,
 }: Props) => {
   const dispatch: Dispatch = useDispatch();
-  const [page, setPage] = useState(pageRedux);
-  const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageRedux);
+  // TODO: load initial state from route query
+  const [page, setPage] = useState(DEFAULT_PAGE);
+  const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -224,7 +223,7 @@ const RemoteRecords = ({
     );
   }
 
-  const rows: RemoteLocation[] = remoteLocationsRedux.map(location => {
+  const rows: RemoteLocation[] = remoteLocations.map(location => {
     return createData(location);
   });
 
@@ -243,7 +242,7 @@ const RemoteRecords = ({
       />
       <TablePagination
         component="div"
-        count={totalRowsRedux || 0}
+        count={totalRows || 0}
         page={page}
         onPageChange={(_, page) => {
           setPage(page);
@@ -260,19 +259,12 @@ const RemoteRecords = ({
 };
 
 const mapStateToProps = (state: RootState) => {
-  const {
-    remoteLocations: remoteLocationsRedux,
-    totalRows: totalRowsRedux,
-    rowsPerPage: rowsPerPageRedux,
-    page: pageRedux,
-  } = state.location;
+  const { remoteLocations, totalRows } = state.location;
 
   return {
     isFetching: createLoadingSelector([LOCATION_LIST])(state),
-    remoteLocationsRedux,
-    totalRowsRedux,
-    rowsPerPageRedux,
-    pageRedux,
+    remoteLocations,
+    totalRows,
   };
 };
 
