@@ -1,10 +1,13 @@
 import axios from 'axios';
 
 export const fullUrlFrom = (endpoint: string) => {
-  const serverUrl = import.meta.env.VITE_SERVER_URL;
-  // TODO: remove all trailing / of serverUrl and leading / of endpoint
+  // Remove trailing slashes
+  const serverUrl = import.meta.env.VITE_SERVER_URL.replace(/\/+$/, '');
+  // Remove leading slashes
+  const normalizedEndpoint = endpoint.replace(/^\/+/, '');
 
-  return serverUrl + endpoint;
+  // Ensure there's exactly one slash between the URL parts
+  return serverUrl + '/' + normalizedEndpoint;
 };
 
 const request = (

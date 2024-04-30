@@ -15,18 +15,23 @@ export type LocalLocation = {
 
 export type LocalLocationTableRow = LocalLocation & { id: number };
 
+export type RemotePoint = {
+  x: number;
+  y: number;
+};
+
 export type RemoteLocation = {
   id: number;
   name: string;
-  southWest: google.maps.LatLngLiteral;
-  northEast: google.maps.LatLngLiteral;
-  center: google.maps.LatLngLiteral;
+  southWest: RemotePoint;
+  northEast: RemotePoint;
+  center: RemotePoint;
   isFavourite: boolean;
 };
 
 export type ResponseListRemote = {
   status: number;
-  data: { data: RemoteLocation[] };
+  data: PaginatedLocations;
 };
 
 export type ResponseCreateRemote = {
@@ -43,4 +48,31 @@ export type NotificationPayload = {
   severity?: OverridableStringUnion<AlertColor, AlertPropsColorOverrides>;
   duration?: number;
   sx?: SxProps<Theme>;
+};
+
+export type PaginatedSort = {
+  sorted: boolean;
+  unsorted: boolean;
+  empty: boolean;
+};
+
+export type PaginatedLocations = {
+  content: RemoteLocation[];
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+  pageable: {
+    offset: number;
+    pageNumber: number;
+    pageSize: number;
+    paged: boolean;
+    sort: PaginatedSort;
+    unpaged: boolean;
+  };
+  size: number;
+  sort: PaginatedSort;
+  totalElements: number;
+  totalPages: number;
 };

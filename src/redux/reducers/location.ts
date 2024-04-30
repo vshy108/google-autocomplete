@@ -2,9 +2,16 @@ import Actions from '@/redux/actions';
 import { type AnyAction } from 'redux-saga';
 import { type LocalLocation, RemoteLocation } from '@/types';
 
+const DEFAULT_REMOTE_LOCATIONS = {
+  remoteLocations: [] as RemoteLocation[],
+  totalRows: null,
+  rowsPerPage: 10,
+  page: 0,
+};
+
 const initialState = Object.freeze({
   localLocations: [] as LocalLocation[],
-  remoteLocations: [] as RemoteLocation[],
+  ...DEFAULT_REMOTE_LOCATIONS,
 });
 
 const location = (state = initialState, action: AnyAction) => {
@@ -47,6 +54,22 @@ const location = (state = initialState, action: AnyAction) => {
       }
 
       return state;
+    }
+
+    case Actions.LOCATION_LIST_SUCCESS: {
+      const {
+        content: remoteLocations,
+        totalElements: totalRows,
+        size: rowsPerPage,
+        number: page,
+      } = action.payload;
+      return {
+        ...state,
+        remoteLocations,
+        totalRows,
+        rowsPerPage,
+        page,
+      };
     }
 
     default:

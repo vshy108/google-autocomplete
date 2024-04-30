@@ -12,11 +12,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import IconButton from '@mui/material/IconButton';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
-// import { listLocation } from '@/redux/actions/location';
 import { type RootState } from '@/redux/configureStore';
 import { LocalLocation, type LocalLocationTableRow } from '@/types';
 import TablePagination from '@mui/material/TablePagination/TablePagination';
 import { createLocation } from '@/redux/actions/location';
+
+import './index.less';
 
 interface ColumnData {
   dataKey: keyof LocalLocationTableRow;
@@ -138,7 +139,7 @@ const rowContent = (
         } else if (typeof originalValue === 'object') {
           const keys = Object.keys(originalValue);
           if (keys.includes('lat') && keys.includes('lng')) {
-            displayValue = `${originalValue.lat}, ${originalValue.lng}`;
+            displayValue = `${originalValue.lng}, ${originalValue.lat}`;
           }
         }
         return (
@@ -164,11 +165,6 @@ const LocalRecords = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // useEffect(() => {
-  //   dispatch(listLocation());
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
   const rows: LocalLocationTableRow[] = localLocations
     .slice(rowsPerPage * page, rowsPerPage * (page + 1))
     .map((location, index) => {
@@ -176,7 +172,7 @@ const LocalRecords = () => {
     });
 
   return (
-    <Paper style={{ height: '80vh', width: '100%' }}>
+    <Paper className="container">
       <TableVirtuoso
         data={rows}
         components={VirtuosoTableComponents}
@@ -194,6 +190,7 @@ const LocalRecords = () => {
         }}
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={event => {
+          setPage(0);
           setRowsPerPage(parseInt(event.target.value, 10));
         }}
         sx={{ float: 'right', padding: '12px' }}

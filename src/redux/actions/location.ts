@@ -1,4 +1,8 @@
-import { type LocalLocation, type RemoteLocation } from '@/types';
+import {
+  type PaginatedLocations,
+  type LocalLocation,
+  type RemoteLocation,
+} from '@/types';
 
 const PREFIX = 'LOCATION';
 
@@ -16,11 +20,13 @@ export const LOCATION_CREATE = `${PREFIX}/CREATE`;
 export const LOCATION_CREATE_SUCCESS = `${PREFIX}/CREATE_SUCCESS`;
 export const LOCATION_CREATE_FAIL = `${PREFIX}/CREATE_FAIL`;
 
-export const listLocation = () => ({
+export const listLocation = (page: number, rowsPerPage: number) => ({
   type: LOCATION_LIST,
+  page,
+  rowsPerPage,
 });
 
-export const listLocationSuccess = (payload: RemoteLocation[]) => ({
+export const listLocationSuccess = (payload: PaginatedLocations) => ({
   type: LOCATION_LIST_SUCCESS,
   payload,
 });

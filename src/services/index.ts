@@ -4,10 +4,11 @@ import { type LocalLocation, type RemoteLocation } from '@/types';
 
 export default {
   // List remote locations
-  listRemoteLocations: (): Promise<AxiosResponse<RemoteLocation[], object>> =>
-    api.get('api/users'),
+  listRemoteLocations: (params: {
+    pageIndexZero: number;
+    pageSize: number;
+  }): Promise<AxiosResponse<RemoteLocation[]>> => api.get('locations', params),
   createLocation: (
     payload: LocalLocation
-  ): Promise<AxiosResponse<RemoteLocation, object>> =>
-    api.post('api/users', payload),
+  ): Promise<AxiosResponse<RemoteLocation>> => api.post('location', payload),
 };
