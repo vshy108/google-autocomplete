@@ -13,6 +13,7 @@ import './index.less';
 import { addLocalLocation } from '@/redux/actions/location';
 import { type RootState } from '@/redux/configureStore';
 import { triggerNotification } from '@/redux/actions/notification';
+import { type LocalLocation, type RemoteLocation } from '@/types';
 
 const containerStyle = {
   width: '100vw',
@@ -89,8 +90,12 @@ const MapDisplay = memo(() => {
           );
           map?.fitBounds(latlngBounds);
           const name = place.formatted_address;
-          const isExistLocal = localLocations.find(loc => loc.name === name);
-          const isExistRemote = remoteLocations.find(loc => loc.name === name);
+          const isExistLocal = localLocations.find(
+            (loc: LocalLocation) => loc.name === name
+          );
+          const isExistRemote = remoteLocations.find(
+            (loc: RemoteLocation) => loc.name === name
+          );
           if (!isExistLocal && !isExistRemote) {
             dispatch(
               addLocalLocation({

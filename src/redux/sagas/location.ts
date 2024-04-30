@@ -2,7 +2,12 @@ import { takeLatest, all, fork, call, put } from 'redux-saga/effects';
 import Actions from '@/redux/actions';
 import api from '@/services';
 import { type ResponseCreateRemote, type ResponseListRemote } from '@/types';
-import { createLocation, listLocation } from '../actions/location';
+import {
+  addLocalLocation,
+  createLocation,
+  listLocation,
+} from '../actions/location';
+import get from 'lodash/get';
 
 // TODO: list, create, update, delete
 
@@ -43,6 +48,14 @@ function* createRemote({
   } catch (error) {
     // TODO: case of unique
     yield put(Actions.createLocationFail(error));
+    yield put(
+      Actions.triggerNotification({
+        message: get(error, 'response.data.message', 'Please try again later'),
+        severity: 'error',
+      })
+    );
+    // restore the failure local record
+    yield put(addLocalLocation(payload));
   }
 }
 
