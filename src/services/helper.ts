@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+axios.defaults.headers.common['X-API-KEY'] =
+  import.meta.env.VITE_SERVER_API_KEY;
+
 export const fullUrlFrom = (endpoint: string) => {
   // Remove trailing slashes
   const serverUrl = import.meta.env.VITE_SERVER_URL.replace(/\/+$/, '');
