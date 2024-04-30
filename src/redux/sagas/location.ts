@@ -38,7 +38,7 @@ function* createRemote({
   try {
     const response = yield call(api.createLocation, payload);
     if (response?.status === 200) {
-      yield put(Actions.createLocationSuccess(response?.data?.data));
+      yield put(Actions.createLocationSuccess(response?.data));
     }
   } catch (error) {
     // TODO: case of unique

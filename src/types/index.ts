@@ -36,7 +36,7 @@ export type ResponseListRemote = {
 
 export type ResponseCreateRemote = {
   status: number;
-  data: { data: RemoteLocation };
+  data: RemoteLocation;
 };
 
 export type FavouriteLocalLocationPayload = {
