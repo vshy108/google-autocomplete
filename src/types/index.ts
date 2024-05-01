@@ -91,3 +91,5 @@ export type DeleteLocationActionPayload = {
   id: number;
   onSuccess?: () => void;
 };
+
+export type OrderString = 'asc' | 'desc' | undefined;

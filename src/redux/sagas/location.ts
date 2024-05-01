@@ -17,6 +17,8 @@ import get from 'lodash/get';
 function* listRemote({
   page,
   rowsPerPage,
+  orderBy,
+  order,
 }: ReturnType<typeof listLocation>): Generator<
   unknown,
   void,
@@ -26,12 +28,13 @@ function* listRemote({
     const response = yield call(api.listRemoteLocations, {
       pageIndexZero: page,
       pageSize: rowsPerPage,
+      columnName: orderBy,
+      isAscending: order ? order === 'asc' : undefined,
     });
     if (response?.status === 200) {
       yield put(Actions.listLocationSuccess(response?.data));
     }
   } catch (error) {
-    // TODO: can generate error by remove column name checking
     yield put(Actions.listLocationFail(error));
     yield put(
       Actions.triggerNotification({

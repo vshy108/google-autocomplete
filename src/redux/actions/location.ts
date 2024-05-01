@@ -4,6 +4,7 @@ import {
   type RemoteLocation,
   type UpdateFavouritePayload,
   type DeleteLocationActionPayload,
+  type OrderString,
 } from '@/types';
 
 const PREFIX = 'LOCATION';
@@ -26,10 +27,17 @@ export const LOCATION_DELETE = `${PREFIX}/DELETE_REQUEST`;
 export const LOCATION_DELETE_SUCCESS = `${PREFIX}/DELETE_SUCCESS`;
 export const LOCATION_DELETE_FAIL = `${PREFIX}/DELETE_FAIL`;
 
-export const listLocation = (page: number, rowsPerPage: number) => ({
+export const listLocation = (
+  page: number,
+  rowsPerPage: number,
+  orderBy: string | undefined,
+  order: OrderString
+) => ({
   type: LOCATION_LIST,
   page,
   rowsPerPage,
+  orderBy,
+  order,
 });
 
 export const listLocationSuccess = (payload: PaginatedLocations) => ({

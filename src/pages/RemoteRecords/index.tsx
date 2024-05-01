@@ -15,7 +15,6 @@ import TableBody from '@mui/material/TableBody/TableBody';
 import IconButton from '@mui/material/IconButton/IconButton';
 import TableCell from '@mui/material/TableCell/TableCell';
 import TableHead from '@mui/material/TableHead/TableHead';
-import { Button } from '@mui/material';
 import { type NavigateFunction, useNavigate } from 'react-router-dom';
 
 import {
@@ -26,9 +25,11 @@ import {
 } from '@/redux/actions/location';
 import { type RootState } from '@/redux/configureStore';
 import { createLoadingSelector } from '@/redux/selectors/loading';
-import { type RemoteLocation } from '@/types';
+import { type OrderString, type RemoteLocation } from '@/types';
 
 import './index.less';
+import Button from '@mui/material/Button/Button';
+import TableSortLabel from '@mui/material/TableSortLabel/TableSortLabel';
 
 type Props = {
   isFetching: boolean;
@@ -42,6 +43,8 @@ interface ColumnData {
   label: string;
   numeric?: boolean;
   width: number;
+  align?: 'center' | 'left' | 'right' | 'inherit' | 'justify' | undefined;
+  sortable?: boolean;
 }
 
 type TableContext = {
@@ -58,6 +61,7 @@ const columns: ColumnData[] = [
     width: 200,
     label: 'Name',
     dataKey: 'name',
+    sortable: true,
   },
   {
     width: 200,
@@ -140,26 +144,6 @@ const VirtuosoTableComponents: TableComponents<RemoteLocation> = {
   },
 };
 
-const fixedHeaderContent = () => {
-  return (
-    <TableRow>
-      {columns.map(column => (
-        <TableCell
-          key={column.dataKey}
-          variant="head"
-          align={column.numeric || false ? 'right' : 'left'}
-          style={{ width: column.width }}
-          sx={{
-            backgroundColor: 'background.paper',
-          }}
-        >
-          {column.label}
-        </TableCell>
-      ))}
-    </TableRow>
-  );
-};
-
 const RemoteRecords = ({
   isFetching,
   remoteLocations = [],
@@ -169,12 +153,14 @@ const RemoteRecords = ({
   // TODO: load initial state from route query
   const [page, setPage] = useState(DEFAULT_PAGE);
   const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
+  const [orderBy, setOrderBy] = useState<string>();
+  const [order, setOrder] = useState<OrderString>();
   const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(listLocation(page, rowsPerPage));
+    dispatch(listLocation(page, rowsPerPage, orderBy, order));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage]);
+  }, [page, rowsPerPage, orderBy, order]);
 
   if (isFetching) {
     return (
@@ -183,6 +169,55 @@ const RemoteRecords = ({
       </div>
     );
   }
+
+  // NOTE: support clear current sort by clicking same key in desc
+  const handleSort = (columnDataKey: string) => {
+    // when previous orderBy is current clicking one
+    if (orderBy === columnDataKey) {
+      if (order === 'asc') {
+        setOrder('desc');
+      } else if (order === 'desc') {
+        setOrder(undefined);
+        setOrderBy(undefined);
+      } else {
+        setOrder('asc');
+      }
+    } else {
+      setOrder('asc');
+      setOrderBy(columnDataKey);
+    }
+    setPage(0);
+  };
+
+  const fixedHeaderContent = () => {
+    return (
+      <TableRow>
+        {columns.map(column => (
+          <TableCell
+            key={column.dataKey}
+            align={column.align || 'left'}
+            sx={{
+              width:
+                typeof column.width !== 'undefined' ? column.width : undefined,
+              backgroundColor: 'background.paper',
+            }}
+          >
+            {column?.sortable === false ? (
+              column.label
+            ) : (
+              <TableSortLabel
+                active={order && orderBy === column.dataKey}
+                direction={orderBy === column.dataKey ? order : undefined}
+                onClick={() => handleSort(column.dataKey)}
+              >
+                {column.label}
+              </TableSortLabel>
+            )}
+          </TableCell>
+        ))}
+      </TableRow>
+    );
+  };
 
   const rowContent = (
     _index: number,
@@ -230,7 +265,9 @@ const RemoteRecords = ({
                       deleteLocation({
                         id: row.id,
                         onSuccess: () =>
-                          dispatch(listLocation(page, rowsPerPage)),
+                          dispatch(
+                            listLocation(page, rowsPerPage, orderBy, order)
+                          ),
                       })
                     );
                   }}
@@ -264,8 +301,6 @@ const RemoteRecords = ({
   const rows: RemoteLocation[] = remoteLocations.map(location => {
     return createData(location);
   });
-
-  // TODO: sorting
 
   return (
     <Paper className="container">

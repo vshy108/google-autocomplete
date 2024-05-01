@@ -11,6 +11,8 @@ export default {
   listRemoteLocations: (params: {
     pageIndexZero: number;
     pageSize: number;
+    columnName: string | undefined;
+    isAscending: boolean | undefined;
   }): Promise<AxiosResponse<RemoteLocation[]>> => api.get('locations', params),
   createLocation: (
     payload: LocalLocation
