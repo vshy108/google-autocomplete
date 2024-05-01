@@ -6,7 +6,7 @@ This web application is built using React, TypeScript, and Material Design with 
 
 Follow these steps to set up and run the web application locally:
 
-1. Create a `.env` file based on the provided `.env.sample`. Make sure to provide values for `VITE_GOOGLE_MAPS_API_KEY` for your Google Maps API key and `VITE_SERVER_URL` for the API server URL.
+1. Create a `.env` file based on the provided `.env.sample`. Make sure to provide values for `VITE_GOOGLE_MAPS_API_KEY` for your Google Maps API key, `VITE_SERVER_URL` for the API server URL and `VITE_SERVER_API_KEY` for the API server API key.
 2. Run `yarn` to install dependencies.
 3. Start the development server by running `yarn dev`.
 4. Open the web application locally by navigating to [http://localhost:5173/](http://localhost:5173/) in your web browser.

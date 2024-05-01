@@ -1,5 +1,15 @@
 import axios from 'axios';
 
+axios.interceptors.request.use(
+  function (config) {
+    config.headers['X-API-KEY'] = import.meta.env.VITE_SERVER_API_KEY;
+    return config;
+  },
+  function (error) {
+    return Promise.reject(error);
+  }
+);
+
 export const fullUrlFrom = (endpoint: string) => {
   // Remove trailing slashes
   const serverUrl = import.meta.env.VITE_SERVER_URL.replace(/\/+$/, '');
