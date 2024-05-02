@@ -1,4 +1,4 @@
-import { forwardRef, Fragment, useState } from 'react';
+import { forwardRef, Fragment, useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -13,17 +13,24 @@ import IconButton from '@mui/material/IconButton';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 import { type RootState } from '@/redux/configureStore';
-import { LocalLocation, type LocalLocationTableRow } from '@/types';
+import {
+  type LocalLocation,
+  type OrderString,
+  type LocalLocationTableRow,
+} from '@/types';
 import TablePagination from '@mui/material/TablePagination/TablePagination';
 import { createLocation } from '@/redux/actions/location';
 
 import './index.less';
+import TableSortLabel from '@mui/material/TableSortLabel/TableSortLabel';
+import { cloneDeep } from 'lodash';
 
 interface ColumnData {
   dataKey: keyof LocalLocationTableRow;
   label: string;
   numeric?: boolean;
   width: number;
+  sortable?: boolean;
 }
 
 const createData = (
@@ -45,6 +52,7 @@ const columns: ColumnData[] = [
     width: 200,
     label: 'Name',
     dataKey: 'name',
+    sortable: true,
   },
   {
     width: 200,
@@ -85,26 +93,6 @@ const VirtuosoTableComponents: TableComponents<LocalLocationTableRow> = {
   TableBody: forwardRef<HTMLTableSectionElement>((props, ref) => (
     <TableBody {...props} ref={ref} />
   )),
-};
-
-const fixedHeaderContent = () => {
-  return (
-    <TableRow>
-      {columns.map(column => (
-        <TableCell
-          key={column.dataKey}
-          variant="head"
-          align={column.numeric || false ? 'right' : 'left'}
-          style={{ width: column.width }}
-          sx={{
-            backgroundColor: 'background.paper',
-          }}
-        >
-          {column.label}
-        </TableCell>
-      ))}
-    </TableRow>
-  );
 };
 
 const rowContent = (
@@ -155,6 +143,34 @@ const rowContent = (
   );
 };
 
+const descendingComparator = (
+  a: LocalLocation,
+  b: LocalLocation,
+  orderBy: keyof LocalLocation | undefined
+) => {
+  if (orderBy) {
+    if (b[orderBy] < a[orderBy]) {
+      return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+      return 1;
+    }
+  }
+
+  return 0;
+};
+
+const getComparator = (
+  order: OrderString,
+  orderBy: keyof LocalLocation | undefined
+) => {
+  return order === 'desc'
+    ? (a: LocalLocation, b: LocalLocation) =>
+        descendingComparator(a, b, orderBy)
+    : (a: LocalLocation, b: LocalLocation) =>
+        -descendingComparator(a, b, orderBy);
+};
+
 const LocalRecords = () => {
   const dispatch: Dispatch = useDispatch();
 
@@ -164,8 +180,71 @@ const LocalRecords = () => {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [data, setData] = useState(localLocations);
+  const [orderBy, setOrderBy] = useState<keyof LocalLocation | undefined>();
+  const [order, setOrder] = useState<OrderString>();
 
-  const rows: LocalLocationTableRow[] = localLocations
+  useEffect(() => {
+    const newData = cloneDeep(localLocations);
+    if (order) {
+      newData.sort(getComparator(order, orderBy));
+    }
+    setData(newData);
+  }, [localLocations, order, orderBy]);
+
+  // NOTE: support clear current sort by clicking same key in desc
+  const handleSort = (columnDataKey: keyof LocalLocation | undefined) => {
+    // when previous orderBy is current clicking one
+    if (orderBy === columnDataKey) {
+      if (order === 'asc') {
+        setOrder('desc');
+      } else if (order === 'desc') {
+        setOrder(undefined);
+        setOrderBy(undefined);
+      } else {
+        setOrder('asc');
+      }
+    } else {
+      setOrder('asc');
+      setOrderBy(columnDataKey);
+    }
+    setPage(0);
+  };
+
+  const fixedHeaderContent = () => {
+    return (
+      <TableRow>
+        {columns.map(column => (
+          <TableCell
+            key={column.dataKey}
+            sx={{
+              width:
+                typeof column.width !== 'undefined' ? column.width : undefined,
+              backgroundColor: 'background.paper',
+            }}
+          >
+            {column?.sortable === false ? (
+              column.label
+            ) : (
+              <TableSortLabel
+                active={order && orderBy === column.dataKey}
+                direction={orderBy === column.dataKey ? order : undefined}
+                onClick={() => {
+                  if (column.dataKey !== 'id') {
+                    handleSort(column.dataKey);
+                  }
+                }}
+              >
+                {column.label}
+              </TableSortLabel>
+            )}
+          </TableCell>
+        ))}
+      </TableRow>
+    );
+  };
+
+  const rows: LocalLocationTableRow[] = data
     .slice(rowsPerPage * page, rowsPerPage * (page + 1))
     .map((location, index) => {
       return createData(location, index);
