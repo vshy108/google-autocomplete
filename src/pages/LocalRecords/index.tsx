@@ -24,6 +24,7 @@ import { createLocation } from '@/redux/actions/location';
 import './index.less';
 import TableSortLabel from '@mui/material/TableSortLabel/TableSortLabel';
 import { cloneDeep } from 'lodash';
+import { convertQueryToState, useQuery } from '@/utils';
 
 interface ColumnData {
   dataKey: keyof LocalLocationTableRow;
@@ -32,6 +33,9 @@ interface ColumnData {
   width: number;
   sortable?: boolean;
 }
+
+const DEFAULT_PAGE = 0;
+const DEFAULT_ROWS_PER_PAGE = 10;
 
 const createData = (
   { name, isFavourite, southWest, northEast, center }: LocalLocation,
@@ -178,11 +182,32 @@ const LocalRecords = () => {
     (state: RootState) => state.location.localLocations
   );
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  // load initial state from route query
+  // ?size=10&page=1&column=name&order=desc
+  const routeQuery = useQuery();
+  const pageQuery = routeQuery.get('page');
+  const sizeQuery = routeQuery.get('size');
+  const columnQuery = routeQuery.get('column');
+  const orderQuery = routeQuery.get('order');
+
   const [data, setData] = useState(localLocations);
-  const [orderBy, setOrderBy] = useState<keyof LocalLocation | undefined>();
-  const [order, setOrder] = useState<OrderString>();
+
+  const [page, setPage] = useState(
+    convertQueryToState(pageQuery, DEFAULT_PAGE)
+  );
+  const [rowsPerPage, setRowsPerPage] = useState(
+    convertQueryToState(sizeQuery, DEFAULT_ROWS_PER_PAGE)
+  );
+  const [orderBy, setOrderBy] = useState<keyof LocalLocation | undefined>(
+    (['name', null].includes(columnQuery)
+      ? columnQuery ?? undefined
+      : undefined) as keyof LocalLocation | undefined
+  );
+  const [order, setOrder] = useState<OrderString>(
+    (['desc', 'asc', null].includes(orderQuery)
+      ? orderQuery ?? undefined
+      : undefined) as OrderString
+  );
 
   useEffect(() => {
     const newData = cloneDeep(localLocations);
