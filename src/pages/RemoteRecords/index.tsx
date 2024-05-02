@@ -21,6 +21,7 @@ import {
   deleteLocation,
   listLocation,
   LOCATION_LIST,
+  LOCATION_UPDATE_FAVOURITE,
   updateLocationFavourite,
 } from '@/redux/actions/location';
 import { type RootState } from '@/redux/configureStore';
@@ -36,6 +37,7 @@ type Props = {
   remoteLocations: RemoteLocation[];
   totalRows: number | null;
   dispatch: Dispatch;
+  isUpdating: boolean;
 };
 
 interface ColumnData {
@@ -149,6 +151,7 @@ const RemoteRecords = ({
   remoteLocations = [],
   totalRows = null,
   dispatch,
+  isUpdating,
 }: Props) => {
   // TODO: load initial state from route query
   const [page, setPage] = useState(DEFAULT_PAGE);
@@ -238,8 +241,8 @@ const RemoteRecords = ({
                   aria-label="account of current user"
                   aria-controls="menu-appbar"
                   aria-haspopup="true"
+                  disabled={isUpdating}
                   onClick={() => {
-                    // TODO: disable when the updateLocationFavourite request is loading
                     dispatch(
                       updateLocationFavourite({
                         id: row.id,
@@ -336,6 +339,7 @@ const mapStateToProps = (state: RootState) => {
 
   return {
     isFetching: createLoadingSelector([LOCATION_LIST])(state),
+    isUpdating: createLoadingSelector([LOCATION_UPDATE_FAVOURITE])(state),
     remoteLocations,
     totalRows,
   };
