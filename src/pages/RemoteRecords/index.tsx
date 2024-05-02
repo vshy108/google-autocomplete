@@ -15,7 +15,11 @@ import TableBody from '@mui/material/TableBody/TableBody';
 import IconButton from '@mui/material/IconButton/IconButton';
 import TableCell from '@mui/material/TableCell/TableCell';
 import TableHead from '@mui/material/TableHead/TableHead';
-import { type NavigateFunction, useNavigate } from 'react-router-dom';
+import {
+  type NavigateFunction,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 
 import {
   deleteLocation,
@@ -26,7 +30,11 @@ import {
 } from '@/redux/actions/location';
 import { type RootState } from '@/redux/configureStore';
 import { createLoadingSelector } from '@/redux/selectors/loading';
-import { type OrderString, type RemoteLocation } from '@/types';
+import {
+  type SearchParams,
+  type OrderString,
+  type RemoteLocation,
+} from '@/types';
 
 import './index.less';
 import Button from '@mui/material/Button/Button';
@@ -161,6 +169,7 @@ const RemoteRecords = ({
   const sizeQuery = routeQuery.get('size');
   const columnQuery = routeQuery.get('column');
   const orderQuery = routeQuery.get('order');
+  const [, setSearchParams] = useSearchParams();
 
   const [page, setPage] = useState(
     convertQueryToState(pageQuery, DEFAULT_PAGE)
@@ -181,6 +190,25 @@ const RemoteRecords = ({
 
   useEffect(() => {
     dispatch(listLocation(page, rowsPerPage, orderBy, order));
+
+    let basicSearchParams: SearchParams = {
+      page: page.toString(),
+      size: rowsPerPage.toString(),
+    };
+    if (orderBy) {
+      basicSearchParams = {
+        ...basicSearchParams,
+        column: orderBy,
+      };
+    }
+
+    if (order) {
+      basicSearchParams = {
+        ...basicSearchParams,
+        order,
+      };
+    }
+    setSearchParams(basicSearchParams);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, orderBy, order]);
 

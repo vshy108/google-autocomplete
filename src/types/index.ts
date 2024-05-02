@@ -93,3 +93,10 @@ export type DeleteLocationActionPayload = {
 };
 
 export type OrderString = 'asc' | 'desc' | undefined;
+
+export type SearchParams = {
+  page: string;
+  size: string;
+  column?: string | undefined;
+  order?: string | undefined;
+};

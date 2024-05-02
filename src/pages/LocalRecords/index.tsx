@@ -17,6 +17,7 @@ import {
   type LocalLocation,
   type OrderString,
   type LocalLocationTableRow,
+  type SearchParams,
 } from '@/types';
 import TablePagination from '@mui/material/TablePagination/TablePagination';
 import { createLocation } from '@/redux/actions/location';
@@ -25,6 +26,7 @@ import './index.less';
 import TableSortLabel from '@mui/material/TableSortLabel/TableSortLabel';
 import { cloneDeep } from 'lodash';
 import { convertQueryToState, useQuery } from '@/utils';
+import { useSearchParams } from 'react-router-dom';
 
 interface ColumnData {
   dataKey: keyof LocalLocationTableRow;
@@ -209,6 +211,8 @@ const LocalRecords = () => {
       : undefined) as OrderString
   );
 
+  const [, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     const newData = cloneDeep(localLocations);
     if (order) {
@@ -216,6 +220,28 @@ const LocalRecords = () => {
     }
     setData(newData);
   }, [localLocations, order, orderBy]);
+
+  useEffect(() => {
+    let basicSearchParams: SearchParams = {
+      page: page.toString(),
+      size: rowsPerPage.toString(),
+    };
+    if (orderBy) {
+      basicSearchParams = {
+        ...basicSearchParams,
+        column: orderBy,
+      };
+    }
+
+    if (order) {
+      basicSearchParams = {
+        ...basicSearchParams,
+        order,
+      };
+    }
+    setSearchParams(basicSearchParams);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage, orderBy, order]);
 
   // NOTE: support clear current sort by clicking same key in desc
   const handleSort = (columnDataKey: keyof LocalLocation | undefined) => {
