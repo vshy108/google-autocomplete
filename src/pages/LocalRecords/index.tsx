@@ -24,7 +24,7 @@ import { createLocation } from '@/redux/actions/location';
 
 import './index.less';
 import TableSortLabel from '@mui/material/TableSortLabel/TableSortLabel';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { convertQueryToState, useQuery } from '@/utils';
 import { useSearchParams } from 'react-router-dom';
 

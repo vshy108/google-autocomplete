@@ -14,7 +14,7 @@ import {
 } from '../actions/location';
 import get from 'lodash/get';
 
-function* listRemote({
+export function* listRemote({
   page,
   rowsPerPage,
   orderBy,
@@ -49,7 +49,7 @@ function* listRemote({
   }
 }
 
-function* createRemote({
+export function* createRemote({
   payload,
 }: ReturnType<typeof createLocation>): Generator<
   unknown,
@@ -81,7 +81,7 @@ function* createRemote({
   }
 }
 
-function* updateFavourite({
+export function* updateFavourite({
   payload,
 }: ReturnType<typeof updateLocationFavourite>): Generator<
   unknown,
@@ -112,7 +112,7 @@ function* updateFavourite({
   }
 }
 
-function* deleteRemote({
+export function* deleteRemote({
   payload: { id, onSuccess },
 }: ReturnType<typeof deleteLocation>): Generator<
   unknown,
