@@ -59,10 +59,12 @@ export function* createRemote({
   try {
     const response = yield call(api.createLocation, payload);
     if (response?.status === 200) {
-      Actions.triggerNotification({
-        message: 'Successfully creating location.',
-        severity: 'success',
-      });
+      yield put(
+        Actions.triggerNotification({
+          message: 'Successfully creating location.',
+          severity: 'success',
+        })
+      );
       yield put(Actions.createLocationSuccess(response?.data));
     }
   } catch (error) {
@@ -91,10 +93,12 @@ export function* updateFavourite({
   try {
     const response = yield call(api.updateLocationFavourite, payload);
     if (response?.status === 200) {
-      Actions.triggerNotification({
-        message: 'Successfully update favourite of the location.',
-        severity: 'success',
-      });
+      yield put(
+        Actions.triggerNotification({
+          message: 'Successfully update favourite of the location.',
+          severity: 'success',
+        })
+      );
       yield put(Actions.updateLocationFavouriteSuccess(response?.data));
     }
   } catch (error) {
@@ -122,10 +126,12 @@ export function* deleteRemote({
   try {
     const response = yield call(api.deleteRemoteLocation, id);
     if (response?.status === 200) {
-      Actions.triggerNotification({
-        message: 'Successfully delete location.',
-        severity: 'success',
-      });
+      yield put(
+        Actions.triggerNotification({
+          message: 'Successfully delete location.',
+          severity: 'success',
+        })
+      );
       yield put(Actions.deleteLocationSuccess(id));
       onSuccess?.();
     }
