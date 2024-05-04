@@ -1,6 +1,6 @@
 # React Web Application with Google Places Integration
 
-This web application is built using React, TypeScript, and Material Design with Vite. It integrates with the Google Places service to retrieve search results and saves them as local records. Users can mark local records as favorites, at which point they are treated as remote records. Remote records can be updated with new favorite flags or deleted. Pagination functionality is enabled for managing records efficiently.
+This web application is built using React, TypeScript, and Material Design with Vite. It integrates with the Google Places service to retrieve search results and saves them as local records. Users can mark local records as favorites, at which point they are treated as remote records. Remote records can be updated with new favorite flags or deleted. Pagination and sorting functionality is enabled for managing records efficiently. Redux sagas are tested with redux-saga-test-plan.
 
 ## Getting Started
 
