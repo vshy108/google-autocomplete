@@ -1,50 +1,15 @@
-import { afterEach, vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import { deleteRemote } from '../../../src/redux/sagas/location.ts';
 import { expectSaga } from 'redux-saga-test-plan';
 import * as matchers from 'redux-saga-test-plan/matchers';
+import { throwError } from 'redux-saga-test-plan/providers';
+import { faker } from '@faker-js/faker';
 import api from '../../../src/services/index.ts';
 import { TRIGGER_NOTIFICATION } from '../../../src/redux/actions/notification.ts';
 import Actions from '../../../src/redux/actions';
 
 describe('delete location', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('should raise success notification, related success action and trigger onSuccess', () => {
-    vi.mock('../../../src/services/index.ts', async importOriginal => {
-      const mod = await importOriginal();
-      return {
-        default: {
-          ...mod.default,
-          deleteRemoteLocation: vi
-            .fn()
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .mockImplementation(_id => ({ status: 200 })),
-        },
-      };
-    });
-
-    // NOTE: another way to mock, but this one not mocking other keys
-    // const fnMock = vi.hoisted(() => {
-    //   return {
-    //     default: {
-    //       default: vi.fn(),
-    //       deleteRemoteLocation: vi
-    //         .fn()
-    //         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    //         .mockImplementation(_id => ({ status: 200 })),
-    //     },
-    //   };
-    // });
-
-    // vi.mock('../../../src/services/index.ts', () => {
-    //   return fnMock;
-    // });
-
-    // NOTE: check if the mock is working like expected
-    // expect(api.deleteRemoteLocation(1)).toStrictEqual({ status: 200 });
-
     const id = Math.random();
     const onSuccessSpy = vi.fn();
     return expectSaga(deleteRemote, {
@@ -64,5 +29,26 @@ describe('delete location', () => {
         // Check if onSuccess was called
         expect(onSuccessSpy).toHaveBeenCalledOnce();
       });
+  });
+
+  it('should raise error notification and related fail action', () => {
+    const message = faker.lorem.text();
+    const error = { response: { data: { message } } };
+
+    return expectSaga(deleteRemote, {
+      payload: { id: 1, onSuccess: () => {} },
+    })
+      .provide([
+        [matchers.call.fn(api.deleteRemoteLocation), throwError(error)],
+      ])
+      .put({
+        type: TRIGGER_NOTIFICATION,
+        payload: {
+          message,
+          severity: 'error',
+        },
+      })
+      .put(Actions.deleteLocationFail(error))
+      .run();
   });
 });
