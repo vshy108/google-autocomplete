@@ -2,9 +2,9 @@ import Actions from '@/redux/actions';
 import { type AnyAction } from 'redux-saga';
 import { type LocalLocation, RemoteLocation } from '@/types';
 
-const DEFAULT_REMOTE_LOCATIONS = {
+export const DEFAULT_REMOTE_LOCATIONS = {
   remoteLocations: [] as RemoteLocation[],
-  totalRows: null,
+  totalRows: null as number | null,
   rowsPerPage: 10,
   page: 0,
 };

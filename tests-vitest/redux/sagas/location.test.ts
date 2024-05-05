@@ -12,10 +12,12 @@ import { faker } from '@faker-js/faker';
 import api from '../../../src/services/index.ts';
 import { TRIGGER_NOTIFICATION } from '../../../src/redux/actions/notification.ts';
 import Actions from '../../../src/redux/actions/index.ts';
-import reducer from '../../../src/redux/reducers/location.ts';
+import reducer, {
+  DEFAULT_REMOTE_LOCATIONS,
+} from '../../../src/redux/reducers/location.ts';
 
 describe('list location', () => {
-  it('should trigger related success action', () => {
+  it('should trigger related success action and update location redux state', () => {
     const page = 0;
     const rowsPerPage = 10;
     const responseData = {
@@ -124,7 +126,7 @@ describe('list location', () => {
 });
 
 describe('create location', () => {
-  const payload = {
+  const requestBody = {
     type: Actions.LOCATION_CREATE,
     payload: {
       name: faker.lorem.text(),
@@ -140,16 +142,20 @@ describe('create location', () => {
         lng: faker.number.int({ min: -180, max: 180 }),
         lat: faker.number.int({ min: -90, max: 90 }),
       },
-      isFavourite: faker.datatype.boolean(),
+      isFavourite: true,
     },
   };
 
-  it('should trigger success notification and related success action', () => {
+  it('should trigger success notification, related success action and update redux location state', () => {
     const responseData = {};
     return expectSaga(createRemote, {
       type: Actions.LOCATION_CREATE,
-      payload,
+      payload: requestBody,
     })
+      .withReducer(reducer, {
+        ...DEFAULT_REMOTE_LOCATIONS,
+        localLocations: [{ ...requestBody, isFavourite: false }],
+      })
       .provide([
         [
           matchers.call.fn(api.createLocation),
@@ -164,6 +170,10 @@ describe('create location', () => {
         },
       })
       .put(Actions.createLocationSuccess(responseData))
+      .hasFinalState({
+        ...DEFAULT_REMOTE_LOCATIONS,
+        localLocations: [],
+      })
       .run();
   });
 
@@ -173,7 +183,7 @@ describe('create location', () => {
 
     return expectSaga(createRemote, {
       type: Actions.LOCATION_CREATE,
-      payload,
+      payload: requestBody,
     })
       .provide([
         // @ts-expect-error throwError only support Error
@@ -195,7 +205,7 @@ describe('create location', () => {
 
     return expectSaga(createRemote, {
       type: Actions.LOCATION_CREATE,
-      payload,
+      payload: requestBody,
     })
       .provide([[matchers.call.fn(api.createLocation), throwError(error)]])
       .put({
@@ -215,29 +225,42 @@ describe('update location favourite', () => {
     type: Actions.LOCATION_UPDATE_FAVOURITE,
     payload: {
       id: faker.number.int({ min: 1, max: 100 }),
-      name: faker.lorem.text(),
-      southWest: {
-        x: faker.number.int({ min: -180, max: 180 }),
-        y: faker.number.int({ min: -90, max: 90 }),
-      },
-      northEast: {
-        x: faker.number.int({ min: -180, max: 180 }),
-        y: faker.number.int({ min: -90, max: 90 }),
-      },
-      center: {
-        x: faker.number.int({ min: -180, max: 180 }),
-        y: faker.number.int({ min: -90, max: 90 }),
-      },
       isFavourite: faker.datatype.boolean(),
     },
   };
 
   it('should trigger success notification and related success action', () => {
-    const responseData = {};
+    const responseData = {
+      id: payload.payload.id,
+      name: faker.lorem.text(),
+      southWest: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      northEast: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      center: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      isFavourite: payload.payload.isFavourite,
+    };
+    const originalReducerState = {
+      localLocations: [],
+      remoteLocations: [
+        { ...responseData, isFavourite: !responseData.isFavourite },
+      ],
+      totalRows: 1,
+      rowsPerPage: 10,
+      page: 0,
+    };
     return expectSaga(updateFavourite, {
       type: Actions.LOCATION_UPDATE_FAVOURITE,
       payload,
     })
+      .withReducer(reducer, originalReducerState)
       .provide([
         [
           matchers.call.fn(api.updateLocationFavourite),
@@ -252,6 +275,10 @@ describe('update location favourite', () => {
         },
       })
       .put(Actions.updateLocationFavouriteSuccess(responseData))
+      .hasFinalState({
+        ...originalReducerState,
+        remoteLocations: [responseData],
+      })
       .run();
   });
 
@@ -304,12 +331,37 @@ describe('update location favourite', () => {
 describe('delete location', () => {
   it('should raise success notification, related success action and trigger onSuccess', () => {
     const id = Math.random();
+    const existingLocation = {
+      id,
+      name: faker.lorem.text(),
+      southWest: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      northEast: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      center: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      isFavourite: faker.datatype.boolean(),
+    };
+    const originalReducerState = {
+      localLocations: [],
+      remoteLocations: [existingLocation],
+      totalRows: 1,
+      rowsPerPage: 10,
+      page: 0,
+    };
     const onSuccessSpy = vi.fn();
     return expectSaga(deleteRemote, {
       type: Actions.LOCATION_DELETE,
       payload: { id, onSuccess: onSuccessSpy },
     })
       .provide([[matchers.call.fn(api.deleteRemoteLocation), { status: 200 }]])
+      .withReducer(reducer, originalReducerState)
       .put({
         type: TRIGGER_NOTIFICATION,
         payload: {
@@ -318,6 +370,10 @@ describe('delete location', () => {
         },
       })
       .put(Actions.deleteLocationSuccess(id))
+      .hasFinalState({
+        ...originalReducerState,
+        remoteLocations: [],
+      })
       .run()
       .then(() => {
         // Check if onSuccess was called
