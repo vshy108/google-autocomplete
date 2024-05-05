@@ -69,7 +69,6 @@ export function* createRemote({
     }
   } catch (error) {
     // NOTE: Uniqueness conflict on name column
-    yield put(Actions.createLocationFail(error));
     yield put(
       Actions.triggerNotification({
         message: get(
@@ -80,6 +79,7 @@ export function* createRemote({
         severity: 'error',
       })
     );
+    yield put(Actions.createLocationFail(error));
   }
 }
 
