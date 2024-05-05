@@ -12,18 +12,61 @@ import { faker } from '@faker-js/faker';
 import api from '../../../src/services/index.ts';
 import { TRIGGER_NOTIFICATION } from '../../../src/redux/actions/notification.ts';
 import Actions from '../../../src/redux/actions/index.ts';
+import reducer from '../../../src/redux/reducers/location.ts';
 
 describe('list location', () => {
   it('should trigger related success action', () => {
-    const page = Math.random();
-    const rowsPerPage = Math.random();
+    const page = 0;
+    const rowsPerPage = 10;
+    const responseData = {
+      content: [
+        {
+          id: faker.number.int({ min: 1, max: 100 }),
+          name: faker.lorem.text(),
+          southWest: {
+            x: faker.number.int({ min: -180, max: 180 }),
+            y: faker.number.int({ min: -90, max: 90 }),
+          },
+          northEast: {
+            x: faker.number.int({ min: -180, max: 180 }),
+            y: faker.number.int({ min: -90, max: 90 }),
+          },
+          center: {
+            x: faker.number.int({ min: -180, max: 180 }),
+            y: faker.number.int({ min: -90, max: 90 }),
+          },
+          isFavourite: faker.datatype.boolean(),
+        },
+      ],
+      number: page,
+      size: rowsPerPage,
+      totalElements: 10 + faker.number.int({ min: 1, max: 10 }),
+    };
     return expectSaga(listRemote, {
-      payload: { page, rowsPerPage },
+      type: Actions.LOCATION_LIST,
+      page,
+      rowsPerPage,
+      orderBy: undefined,
+      order: undefined,
     })
+      .withReducer(reducer)
       .provide([
-        [matchers.call.fn(api.listRemoteLocations), { status: 200, data: [] }],
+        [
+          matchers.call.fn(api.listRemoteLocations),
+          {
+            status: 200,
+            data: responseData,
+          },
+        ],
       ])
-      .put(Actions.listLocationSuccess([]))
+      .put(Actions.listLocationSuccess(responseData))
+      .hasFinalState({
+        localLocations: [],
+        remoteLocations: responseData.content,
+        totalRows: responseData.totalElements,
+        rowsPerPage: responseData.size,
+        page: responseData.number,
+      })
       .run();
   });
 
@@ -34,9 +77,16 @@ describe('list location', () => {
     const page = Math.random();
     const rowsPerPage = Math.random();
     return expectSaga(listRemote, {
-      payload: { page, rowsPerPage },
+      type: Actions.LOCATION_LIST,
+      page,
+      rowsPerPage,
+      orderBy: undefined,
+      order: undefined,
     })
-      .provide([[matchers.call.fn(api.listRemoteLocations), throwError(error)]])
+      .provide([
+        // @ts-expect-error throwError only support Error
+        [matchers.call.fn(api.listRemoteLocations), throwError(error)],
+      ])
       .put({
         type: TRIGGER_NOTIFICATION,
         payload: {
@@ -49,12 +99,16 @@ describe('list location', () => {
   });
 
   it('should raise error notification with default message and related fail action', () => {
-    const error = {};
+    const error = new Error();
 
     const page = Math.random();
     const rowsPerPage = Math.random();
     return expectSaga(listRemote, {
-      payload: { page, rowsPerPage },
+      type: Actions.LOCATION_LIST,
+      page,
+      rowsPerPage,
+      orderBy: undefined,
+      order: undefined,
     })
       .provide([[matchers.call.fn(api.listRemoteLocations), throwError(error)]])
       .put({
@@ -70,10 +124,32 @@ describe('list location', () => {
 });
 
 describe('create location', () => {
+  const payload = {
+    type: Actions.LOCATION_CREATE,
+    payload: {
+      name: faker.lorem.text(),
+      southWest: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      northEast: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      center: {
+        lng: faker.number.int({ min: -180, max: 180 }),
+        lat: faker.number.int({ min: -90, max: 90 }),
+      },
+      isFavourite: faker.datatype.boolean(),
+    },
+  };
+
   it('should trigger success notification and related success action', () => {
-    const payload = {};
     const responseData = {};
-    return expectSaga(createRemote, payload)
+    return expectSaga(createRemote, {
+      type: Actions.LOCATION_CREATE,
+      payload,
+    })
       .provide([
         [
           matchers.call.fn(api.createLocation),
@@ -96,9 +172,13 @@ describe('create location', () => {
     const error = { response: { data: { message } } };
 
     return expectSaga(createRemote, {
-      payload: {},
+      type: Actions.LOCATION_CREATE,
+      payload,
     })
-      .provide([[matchers.call.fn(api.createLocation), throwError(error)]])
+      .provide([
+        // @ts-expect-error throwError only support Error
+        [matchers.call.fn(api.createLocation), throwError(error)],
+      ])
       .put({
         type: TRIGGER_NOTIFICATION,
         payload: {
@@ -111,10 +191,11 @@ describe('create location', () => {
   });
 
   it('should raise error notification with default message and related fail action', () => {
-    const error = {};
+    const error = new Error();
 
     return expectSaga(createRemote, {
-      payload: {},
+      type: Actions.LOCATION_CREATE,
+      payload,
     })
       .provide([[matchers.call.fn(api.createLocation), throwError(error)]])
       .put({
@@ -130,10 +211,33 @@ describe('create location', () => {
 });
 
 describe('update location favourite', () => {
+  const payload = {
+    type: Actions.LOCATION_UPDATE_FAVOURITE,
+    payload: {
+      id: faker.number.int({ min: 1, max: 100 }),
+      name: faker.lorem.text(),
+      southWest: {
+        x: faker.number.int({ min: -180, max: 180 }),
+        y: faker.number.int({ min: -90, max: 90 }),
+      },
+      northEast: {
+        x: faker.number.int({ min: -180, max: 180 }),
+        y: faker.number.int({ min: -90, max: 90 }),
+      },
+      center: {
+        x: faker.number.int({ min: -180, max: 180 }),
+        y: faker.number.int({ min: -90, max: 90 }),
+      },
+      isFavourite: faker.datatype.boolean(),
+    },
+  };
+
   it('should trigger success notification and related success action', () => {
-    const payload = {};
     const responseData = {};
-    return expectSaga(updateFavourite, payload)
+    return expectSaga(updateFavourite, {
+      type: Actions.LOCATION_UPDATE_FAVOURITE,
+      payload,
+    })
       .provide([
         [
           matchers.call.fn(api.updateLocationFavourite),
@@ -156,9 +260,11 @@ describe('update location favourite', () => {
     const error = { response: { data: { message } } };
 
     return expectSaga(updateFavourite, {
-      payload: {},
+      type: Actions.LOCATION_UPDATE_FAVOURITE,
+      payload,
     })
       .provide([
+        // @ts-expect-error throwError only support Error
         [matchers.call.fn(api.updateLocationFavourite), throwError(error)],
       ])
       .put({
@@ -173,10 +279,11 @@ describe('update location favourite', () => {
   });
 
   it('should raise error notification with default message and related fail action', () => {
-    const error = {};
+    const error = new Error();
 
     return expectSaga(updateFavourite, {
-      payload: {},
+      type: Actions.LOCATION_UPDATE_FAVOURITE,
+      payload,
     })
       .provide([
         [matchers.call.fn(api.updateLocationFavourite), throwError(error)],
@@ -199,6 +306,7 @@ describe('delete location', () => {
     const id = Math.random();
     const onSuccessSpy = vi.fn();
     return expectSaga(deleteRemote, {
+      type: Actions.LOCATION_DELETE,
       payload: { id, onSuccess: onSuccessSpy },
     })
       .provide([[matchers.call.fn(api.deleteRemoteLocation), { status: 200 }]])
@@ -222,9 +330,11 @@ describe('delete location', () => {
     const error = { response: { data: { message } } };
 
     return expectSaga(deleteRemote, {
+      type: Actions.LOCATION_DELETE,
       payload: { id: 1, onSuccess: () => {} },
     })
       .provide([
+        // @ts-expect-error throwError only support Error
         [matchers.call.fn(api.deleteRemoteLocation), throwError(error)],
       ])
       .put({
@@ -239,9 +349,10 @@ describe('delete location', () => {
   });
 
   it('should raise error notification with default message and related fail action', () => {
-    const error = {};
+    const error = new Error();
 
     return expectSaga(deleteRemote, {
+      type: Actions.LOCATION_DELETE,
       payload: { id: 1, onSuccess: () => {} },
     })
       .provide([
